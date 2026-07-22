@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Tonight · Syracuse</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+<style>
+  :root {
+    --ink:        #0b0e17;   /* midnight base */
+    --ink-2:      #121724;   /* raised surface */
+    --ink-3:      #1b2233;   /* card */
+    --line:       #26304a;   /* hairlines */
+    --text:       #eef1f8;
+    --text-dim:   #8b95ad;
+    --text-faint: #5a657a; /* placeholder, overwritten below */
+    --glow:       #ff8a24;   /* OPEN — warm amber/orange glow */
+    --glow-soft:  #ffb15e;
+    --cold:       #3a4a63; /* placeholder */
+    --closed:     #465272;
+    --tape:       #ffd264;   /* accent highlight */
+  }
+  /* fix accidental placeholders */
+  :root{
+    --text-faint:#5a657a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--ink);
+    color: var(--text);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- App shell ---------- */
+  #app {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* ---------- Top bar ---------- */
+  header {
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    background: var(--ink);
+    z-index: 500;
+  }
+  .brand {
+    font-family: 'Archivo', 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .brand em {
+    font-style: normal;
+    color: var(--glow);
+    text-shadow: 0 0 18px rgba(255,138,36,.55);
+  }
+  .brand .city {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.28em;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .datechip {
+    text-align: right;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: .04em;
+    line-height: 1.5;
+  }
+  .datechip b { color: var(--text); font-weight: 600; display:block; font-size:12px; letter-spacing:.02em;}
+
+  /* ---------- Filter row ---------- */
+  .filters {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px;
+    overflow-x: auto;
+    background: var(--ink);
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s ease;
+    display:flex; align-items:center; gap:6px;
+  }
+  .chip:hover { border-color: #35435f; color: var(--text); }
+  .chip.active {
+    background: var(--glow);
+    border-color: var(--glow);
+    color: #1a0f00;
+    font-weight: 700;
+  }
+  .chip .dot { width:6px; height:6px; border-radius:50%; background: var(--glow); box-shadow:0 0 8px var(--glow);}
+  .chip.active .dot{ background:#1a0f00; box-shadow:none;}
+
+  /* ---------- Main split ---------- */
+  .split {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    position: relative;
+  }
+  #map {
+    flex: 1.15;
+    min-width: 0;
+    background: var(--ink);
+    z-index: 1;
+  }
+
+  /* ---------- List panel ---------- */
+  .listwrap {
+    flex: 1;
+    min-width: 0;
+    max-width: 420px;
+    overflow-y: auto;
+    background: var(--ink);
+    border-left: 1px solid var(--line);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .listhdr {
+    position: sticky; top: 0;
+    background: linear-gradient(var(--ink), var(--ink) 70%, transparent);
+    padding: 14px 18px 8px;
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    z-index: 3;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .listhdr .count b{ color: var(--glow); }
+
+  .card {
+    margin: 0 12px 10px;
+    padding: 14px;
+    background: var(--ink-3);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color .15s ease, transform .1s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: #3a4a69; }
+  .card.sel {
+    border-color: var(--glow);
+    box-shadow: 0 0 0 1px var(--glow), 0 8px 30px -12px rgba(255,138,36,.5);
+  }
+  .card.closed { opacity: .62; }
+  .card .toprow { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .card h3 {
+    font-family:'Archivo','Inter',sans-serif;
+    font-size: 16.5px; font-weight: 700; letter-spacing:-.01em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .greek { color: var(--text-dim); font-weight:600; font-size:13px; letter-spacing:.05em;}
+  .status {
+    flex:0 0 auto;
+    font-size: 10.5px; font-weight: 800; letter-spacing:.08em; text-transform:uppercase;
+    padding: 4px 9px; border-radius: 999px; white-space:nowrap;
+  }
+  .status.open   { background: rgba(255,138,36,.16); color: var(--glow-soft); box-shadow: inset 0 0 0 1px rgba(255,138,36,.4);}
+  .status.soon   { background: rgba(255,210,100,.14); color: var(--tape); box-shadow: inset 0 0 0 1px rgba(255,210,100,.35);}
+  .status.closed { background: rgba(90,105,140,.14); color: var(--text-dim); box-shadow: inset 0 0 0 1px var(--line);}
+  .card .meta { margin-top: 9px; font-size: 12.5px; color: var(--text-dim); display:flex; flex-wrap:wrap; gap: 6px 14px; }
+  .card .meta span { display:flex; align-items:center; gap:5px; }
+  .card .meta b { color: var(--text); font-weight:600; }
+  .card .line { margin-top: 10px; font-size: 13px; line-height:1.45; color:#c3ccdf; }
+  .tags { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .tag { font-size:10.5px; color: var(--text-dim); background: var(--ink-2); border:1px solid var(--line); padding:3px 8px; border-radius:6px; }
+
+  /* pulse bar for OPEN cards */
+  .card.open::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background: var(--glow); box-shadow: 0 0 12px var(--glow);
+  }
+
+  /* ---------- Leaflet marker styling ---------- */
+  .pin {
+    display:flex; align-items:center; justify-content:center;
+    border-radius: 50%;
+    font-size: 15px; font-weight: 800;
+    font-family:'Archivo',sans-serif;
+    color:#1a0f00;
+    transition: transform .15s ease;
+  }
+  .pin.open   { background: radial-gradient(circle at 30% 30%, var(--glow-soft), var(--glow)); box-shadow: 0 0 0 3px rgba(255,138,36,.25), 0 0 22px 4px rgba(255,138,36,.7); }
+  .pin.soon   { background: radial-gradient(circle at 30% 30%, #ffe08a, var(--tape)); box-shadow: 0 0 0 3px rgba(255,210,100,.22), 0 0 16px 3px rgba(255,210,100,.55); color:#3a2c00;}
+  .pin.closed { background:#2b344d; color:var(--text-dim); box-shadow: inset 0 0 0 1px var(--line); opacity:.85;}
+  .pin.closed{ background:#2b344d;}
+  .pin.big { transform: scale(1.35); z-index: 999 !important; }
+  .leaflet-marker-icon .pin{ width:100%; height:100%; }
+
+  .leaflet-container { background: #0b0e17 !important; font: inherit;}
+  .leaflet-control-attribution { background: rgba(11,14,23,.7) !important; color:#4a5570 !important;}
+  .leaflet-control-attribution a { color:#6c7a99 !important;}
+  .leaflet-control-zoom a{
+    background: var(--ink-3) !important; color: var(--text) !important; border-color: var(--line) !important;
+  }
+  .leaflet-bar{ border:none !important; box-shadow: 0 4px 20px rgba(0,0,0,.5) !important;}
+
+  /* map legend */
+  .legend {
+    position:absolute; left:14px; bottom:16px; z-index:600;
+    background: rgba(18,23,36,.9); backdrop-filter: blur(8px);
+    border:1px solid var(--line); border-radius:12px;
+    padding:10px 12px; font-size:11px; color:var(--text-dim);
+    display:flex; flex-direction:column; gap:7px;
+  }
+  .legend .row{ display:flex; align-items:center; gap:8px; }
+  .legend .swatch{ width:11px; height:11px; border-radius:50%; }
+  .legend .sw-open{ background:var(--glow); box-shadow:0 0 10px var(--glow);}
+  .legend .sw-soon{ background:var(--tape); box-shadow:0 0 8px var(--tape);}
+  .legend .sw-closed{ background:#2b344d; }
+
+  /* ---------- Detail sheet ---------- */
+  .sheet-scrim{
+    position:absolute; inset:0; background:rgba(5,7,12,.55); backdrop-filter: blur(2px);
+    opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:1000;
+  }
+  .sheet-scrim.on{ opacity:1; pointer-events:auto;}
+  .sheet{
+    position:absolute; z-index:1001; background:var(--ink-2);
+    border:1px solid var(--line);
+    left:50%; bottom:0; width:min(440px,100%);
+    transform: translate(-50%, 100%);
+    border-radius:20px 20px 0 0;
+    transition: transform .28s cubic-bezier(.32,.72,0,1);
+    max-height: 82%; overflow-y:auto;
+    box-shadow: 0 -20px 60px rgba(0,0,0,.6);
+  }
+  .sheet.on{ transform: translate(-50%, 0); }
+  .sheet .grab{ width:38px; height:4px; border-radius:99px; background:var(--line); margin:10px auto 4px;}
+  .sheet-inner{ padding: 6px 20px 26px; }
+  .sheet h2{ font-family:'Archivo',sans-serif; font-size:24px; font-weight:800; letter-spacing:-.02em; display:flex; align-items:center; gap:10px; margin-top:6px;}
+  .sheet .sub{ color:var(--text-dim); font-size:13px; margin-top:4px; letter-spacing:.03em;}
+  .sheet .statusbig{
+    margin:16px 0; padding:14px 16px; border-radius:14px; display:flex; align-items:center; gap:12px;
+  }
+  .sheet .statusbig.open{ background: linear-gradient(120deg, rgba(255,138,36,.16), rgba(255,138,36,.04)); box-shadow: inset 0 0 0 1px rgba(255,138,36,.35);}
+  .sheet .statusbig.soon{ background: rgba(255,210,100,.10); box-shadow: inset 0 0 0 1px rgba(255,210,100,.3);}
+  .sheet .statusbig.closed{ background: var(--ink-3); box-shadow: inset 0 0 0 1px var(--line);}
+  .sheet .statusbig .big{ font-family:'Archivo',sans-serif; font-size:19px; font-weight:800; }
+  .sheet .statusbig.open .big{ color:var(--glow-soft);}
+  .sheet .statusbig .lil{ font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+  .pulse{ width:10px;height:10px;border-radius:50%; background:var(--glow); box-shadow:0 0 0 0 rgba(255,138,36,.7); animation:pulse 1.8s infinite;}
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(255,138,36,.55);} 70%{box-shadow:0 0 0 12px rgba(255,138,36,0);} 100%{box-shadow:0 0 0 0 rgba(255,138,36,0);} }
+
+  .factgrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:4px 0 16px; }
+  .fact{ background:var(--ink-3); border:1px solid var(--line); border-radius:12px; padding:11px 13px; }
+  .fact .k{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); }
+  .fact .v{ font-size:15px; font-weight:700; margin-top:4px; }
+  .fact .v.accent{ color:var(--glow-soft); }
+
+  .sheet h4{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin:18px 0 8px;}
+  .sheet p.body{ font-size:14px; line-height:1.55; color:#cdd5e6;}
+  .report{
+    margin-top:20px; width:100%; padding:13px; border-radius:12px; border:1px dashed var(--line);
+    background:transparent; color:var(--text-dim); font-size:13px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:all .15s;
+  }
+  .report:hover{ border-color:var(--glow); color:var(--glow-soft); }
+  .updated{ text-align:center; font-size:11px; color:var(--text-faint); margin-top:14px; }
+
+  /* ---------- Mobile ---------- */
+  .mobtoggle{ display:none; }
+  @media (max-width: 760px){
+    .split{ flex-direction:column; }
+    #map{ flex:none; height:100%; position:absolute; inset:0; }
+    .listwrap{
+      position:absolute; left:0; right:0; bottom:0; max-width:none;
+      height:58%; border-left:none; border-top:1px solid var(--line);
+      border-radius:18px 18px 0 0; z-index:600;
+      transform: translateY(calc(100% - 128px));
+      transition: transform .3s cubic-bezier(.32,.72,0,1);
+      box-shadow: 0 -14px 40px rgba(0,0,0,.5);
+    }
+    .listwrap.up{ transform: translateY(0); }
+    .mobtoggle{
+      display:flex; position:sticky; top:0; z-index:5;
+      align-items:center; justify-content:center; gap:8px;
+      padding:12px; background:var(--ink); cursor:pointer;
+      border-radius:18px 18px 0 0; border-bottom:1px solid var(--line);
+      font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);
+    }
+    .mobtoggle .bar{ width:34px;height:4px;border-radius:99px;background:var(--line); position:absolute; top:7px; left:50%; transform:translateX(-50%);}
+    .legend{ bottom:auto; top:14px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <div class="brand">Tonight<em>.</em><span class="city">SYRACUSE · GREEK ROW</span></div>
+    </div>
+    <div class="datechip" id="datechip">
+      <b>Loading…</b>
+      lit up right now
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <div class="chip active" data-f="all">All spots</div>
+    <div class="chip" data-f="open"><span class="dot"></span>Open now</div>
+    <div class="chip" data-f="free">No cover</div>
+    <div class="chip" data-f="frat">Frats</div>
+    <div class="chip" data-f="venue">Bars &amp; venues</div>
+    <div class="chip" data-f="live">Live music</div>
+  </div>
+
+  <div class="split">
+    <div id="map"></div>
+    <div class="legend">
+      <div class="row"><span class="swatch sw-open"></span> Open tonight</div>
+      <div class="row"><span class="swatch sw-soon"></span> Opens later</div>
+      <div class="row"><span class="swatch sw-closed"></span> Dark tonight</div>
+    </div>
+
+    <div class="listwrap" id="listwrap">
+      <div class="mobtoggle" id="mobtoggle"><span class="bar"></span>Drag / tap to see the list</div>
+      <div class="listhdr">
+        <span class="count"><b id="cnt">0</b> spots</span>
+        <span id="sub">tap a card or a pin</span>
+      </div>
+      <div id="list"></div>
+    </div>
+  </div>
+
+  <!-- detail sheet -->
+  <div class="sheet-scrim" id="scrim"></div>
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <div class="sheet-inner" id="sheetInner"></div>
+  </div>
+</div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+/* =========================================================
+   TONIGHT · Syracuse  — concept prototype
+   All data below is PLACEHOLDER / illustrative, not real.
+   The point of this build is the interface & data shape.
+   ========================================================= */
+
+const SPOTS = [
+  { id:'dke', name:'DKE', greek:'ΔΚΕ', type:'frat', live:false,
+    lat:43.0389, lng:-76.1338, status:'open', cover:'$10', theme:'Neon / Highlighter',
+    opensAt:'10:30 PM', crowd:'Packed', line:'Highlighter party — wear white. Biggest turnout on the row tonight, cover at the side door.',
+    tags:['#neonparty','#cash-only','#biggest-tonight'], updated:'8 min ago' },
+
+  { id:'sae', name:'SAE', greek:'ΣΑΕ', type:'frat', live:false,
+    lat:43.0381, lng:-76.1352, status:'open', cover:'$5', theme:'Jersey Night',
+    opensAt:'10:00 PM', crowd:'Filling up', line:'Wear a jersey or pay double at the door. Basement is the main floor, DJ till 2.',
+    tags:['#jersey','#basement-dj','#cheap-cover'], updated:'21 min ago' },
+
+  { id:'pike', name:'Pike', greek:'ΠΚΑ', type:'frat', live:false,
+    lat:43.0375, lng:-76.1329, status:'soon', cover:'$10', theme:'Blackout',
+    opensAt:'11:30 PM', crowd:'Not open yet', line:'Doors at 11:30 — line forms early on Walnut. Guest list closes at midnight.',
+    tags:['#late-open','#guestlist','#walnut-ave'], updated:'35 min ago' },
+
+  { id:'tdx', name:'Theta Delt', greek:'ΘΔΧ', type:'frat', live:false,
+    lat:43.0398, lng:-76.1345, status:'closed', cover:'—', theme:'—',
+    opensAt:'Not tonight', crowd:'Dark', line:'Not hosting tonight. Usually back on Thursdays — check again then.',
+    tags:['#dark-tonight','#thursdays'], updated:'1 hr ago' },
+
+  { id:'psiu', name:'Psi U', greek:'ΨΥ', type:'frat', live:false,
+    lat:43.0369, lng:-76.1360, status:'open', cover:'Free', theme:'Rager',
+    opensAt:'10:15 PM', crowd:'Filling up', line:'No cover before 11. Comstock side entrance, ID checked at the door.',
+    tags:['#no-cover','#early','#comstock'], updated:'12 min ago' },
+
+  { id:'chuck', name:"Chuck's", greek:'The Varsity strip', type:'venue', live:false,
+    lat:43.0410, lng:-76.1355, status:'open', cover:'Free', theme:'Dive bar',
+    opensAt:'Open now', crowd:'Busy', line:"Marshall St institution. 18+ till 10, 21+ after. The pregame-into-lategame spot.",
+    tags:['#marshall-st','#18+early','#dive'], updated:'6 min ago' },
+
+  { id:'lucy', name:"Lucy's", greek:'Marshall St', type:'venue', live:true,
+    lat:43.0413, lng:-76.1348, status:'soon', cover:'$5 after 10', theme:'Live band → DJ',
+    opensAt:'9:00 PM', crowd:'Not open yet', line:'Local band opens at 9, DJ takes over at 11. Cover kicks in at 10.',
+    tags:['#live-band','#marshall-st','#21+'], updated:'40 min ago' },
+
+  { id:'wescott', name:'Westcott basement show', greek:'DIY / house show', type:'venue', live:true,
+    lat:43.0466, lng:-76.1208, status:'soon', cover:'$7 donation', theme:'Indie / punk DIY',
+    opensAt:'9:30 PM', crowd:'Not open yet', line:'Three local bands, BYO. Address shared with RSVPs only — tap “I’m going” to unlock.',
+    tags:['#house-show','#diy','#rsvp-only','#byob'], updated:'2 hr ago' },
+];
+
+const STATUS_LABEL = {
+  open:   {t:'Open now',    s:'open'},
+  soon:   {t:'Opens later', s:'soon'},
+  closed: {t:'Dark tonight',s:'closed'},
+};
+
+/* ---------- date chip ---------- */
+(function(){
+  const d = new Date();
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const openCount = SPOTS.filter(s=>s.status==='open').length;
+  document.getElementById('datechip').innerHTML =
+     `<b>${openCount} spots</b> lit up · ${days[d.getDay()]} night`;
+})();
+
+/* ---------- map (best-effort: the list works even if this fails) ---------- */
+let map = null;
+const markers = {};
+try {
+  map = L.map('map', { zoomControl:true, attributionControl:true }).setView([43.0395,-76.1320], 15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 20, attribution:'&copy; OpenStreetMap &copy; CARTO'
+  }).addTo(map);
+
+  SPOTS.forEach(s=>{
+    const size = s.status==='open' ? 40 : 34;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="pin ${s.status}" style="width:${size}px;height:${size}px">${s.type==='frat'?s.greek[0]:'♪'}</div>`,
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
+    });
+    const m = L.marker([s.lat,s.lng], {icon}).addTo(map);
+    m.on('click', ()=>{ select(s.id, true); openSheet(s.id); });
+    markers[s.id]=m;
+  });
+} catch (err) {
+  console.warn('Map could not load; list view still works.', err);
+  const mapEl = document.getElementById('map');
+  if (mapEl) mapEl.innerHTML =
+    '<div style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#5a657a;font-size:13px;padding:24px;line-height:1.6">Map needs an internet connection for tiles.<br>The list on the right works offline.</div>';
+}
+
+/* ---------- list render ---------- */
+const listEl = document.getElementById('list');
+let activeFilter='all';
+let selectedId=null;
+
+function passesFilter(s){
+  switch(activeFilter){
+    case 'open':  return s.status==='open';
+    case 'free':  return /free|no cover/i.test(s.cover);
+    case 'frat':  return s.type==='frat';
+    case 'venue': return s.type==='venue';
+    case 'live':  return s.live;
+    default: return true;
+  }
+}
+
+function render(){
+  const rows = SPOTS.filter(passesFilter)
+    // open first, then soon, then closed; within group keep order
+    .sort((a,b)=>({open:0,soon:1,closed:2}[a.status]) - ({open:0,soon:1,closed:2}[b.status]));
+  document.getElementById('cnt').textContent = rows.length;
+  listEl.innerHTML = rows.map(s=>{
+    const st = STATUS_LABEL[s.status];
+    return `<div class="card ${s.status} ${s.id===selectedId?'sel':''}" data-id="${s.id}">
+      <div class="toprow">
+        <h3>${s.name} ${s.type==='frat'?`<span class="greek">${s.greek}</span>`:''}</h3>
+        <span class="status ${st.s}">${st.t}</span>
+      </div>
+      <div class="meta">
+        <span>🕒 <b>${s.opensAt}</b></span>
+        <span>🎟️ <b>${s.cover}</b></span>
+        ${s.status!=='closed'?`<span>👥 ${s.crowd}</span>`:''}
+      </div>
+      <div class="line">${s.line}</div>
+      <div class="tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  // wire cards
+  [...listEl.querySelectorAll('.card')].forEach(c=>{
+    c.addEventListener('click', ()=>{ const id=c.dataset.id; select(id,true); openSheet(id); });
+  });
+}
+
+/* ---------- selection sync (list <-> map) ---------- */
+function select(id, fly){
+  selectedId=id;
+  // marker emphasis
+  Object.entries(markers).forEach(([mid,m])=>{
+    const el=m.getElement()?.querySelector('.pin');
+    if(el) el.classList.toggle('big', mid===id);
+  });
+  render();
+  const card=listEl.querySelector(`.card[data-id="${id}"]`);
+  if(card) card.scrollIntoView({behavior:'smooth', block:'nearest'});
+  if(fly && map){
+    const s=SPOTS.find(x=>x.id===id);
+    map.flyTo([s.lat,s.lng], 16, {duration:.6});
+  }
+}
+
+/* ---------- detail sheet ---------- */
+const sheet=document.getElementById('sheet');
+const scrim=document.getElementById('scrim');
+function openSheet(id){
+  const s=SPOTS.find(x=>x.id===id);
+  const st=STATUS_LABEL[s.status];
+  const isOpen=s.status==='open';
+  document.getElementById('sheetInner').innerHTML = `
+    <h2>${s.name} ${s.type==='frat'?`<span class="greek" style="font-size:15px">${s.greek}</span>`:''}</h2>
+    <div class="sub">${s.type==='frat'?'Fraternity · Walnut / Comstock area':s.greek}</div>
+
+    <div class="statusbig ${st.s}">
+      ${isOpen?'<div class="pulse"></div>':''}
+      <div>
+        <div class="big">${st.t}${s.theme && s.theme!=='—'?` · ${s.theme}`:''}</div>
+        <div class="lil">${isOpen?`Going now — ${s.crowd.toLowerCase()}`:s.opensAt}</div>
+      </div>
+    </div>
+
+    <div class="factgrid">
+      <div class="fact"><div class="k">Doors</div><div class="v">${s.opensAt}</div></div>
+      <div class="fact"><div class="k">Cover</div><div class="v accent">${s.cover}</div></div>
+      <div class="fact"><div class="k">Right now</div><div class="v">${s.status==='closed'?'—':s.crowd}</div></div>
+      <div class="fact"><div class="k">Vibe</div><div class="v" style="font-size:13px">${s.theme==='—'?'—':s.theme}</div></div>
+    </div>
+
+    <h4>The word tonight</h4>
+    <p class="body">${s.line}</p>
+
+    <button class="report">⚡ Update tonight's status</button>
+    <div class="updated">Last updated ${s.updated} · by a student on the ground</div>
+  `;
+  sheet.classList.add('on'); scrim.classList.add('on');
+}
+function closeSheet(){ sheet.classList.remove('on'); scrim.classList.remove('on'); }
+scrim.addEventListener('click', closeSheet);
+
+/* ---------- filters ---------- */
+document.getElementById('filters').addEventListener('click', e=>{
+  const chip=e.target.closest('.chip'); if(!chip) return;
+  [...document.querySelectorAll('.chip')].forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  activeFilter=chip.dataset.f;
+  render();
+});
+
+/* ---------- mobile sheet drag ---------- */
+const listwrap=document.getElementById('listwrap');
+document.getElementById('mobtoggle').addEventListener('click', ()=>{
+  listwrap.classList.toggle('up');
+});
+
+render();
+</script>
+</body>
+</html>

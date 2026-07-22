@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>今晚不开卡 · 城市夜生活入门地图</title>
+    <meta
+      name="description"
+      content="面向成年夜生活新手的城市俱乐部指南。按城市、场景、音乐与预算，找到更适合自己的今晚去处。"
+    />
+    <link rel="stylesheet" href="./styles.css?v=4" />
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">跳到主要内容</a>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">不</span>
+          <div>
+            <p class="kicker">18+ City Night Guide</p>
+            <h1>今晚不开卡</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="prototype-badge"><i></i>资料测试版</span>
+          <button class="icon-button" id="resetFilters" type="button" aria-label="重置筛选" title="重置筛选">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="discovery-layout" id="mainContent">
+        <aside class="decision-rail">
+          <section class="intro-panel" aria-labelledby="introTitle">
+            <p class="eyebrow">Tonight, sorted.</p>
+            <h2 id="introTitle">三分钟，找到<br />今晚适合你的场。</h2>
+            <p class="intro-copy">不做总榜，不替营销带路。按音乐、预算和第一次去的真实门槛来选。</p>
+
+            <div class="control-group">
+              <div class="control-label"><span>01</span> 先选城市</div>
+              <div class="city-switch" role="tablist" aria-label="城市">
+                <button class="segmented active" type="button" role="tab" aria-selected="true" data-city="上海">上海 <small>SH</small></button>
+                <button class="segmented" type="button" role="tab" aria-selected="false" data-city="杭州">杭州 <small>HZ</small></button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label"><span>02</span> 今晚想怎么玩</div>
+              <div class="scene-grid" id="sceneGrid" aria-label="场景"></div>
+            </div>
+
+            <button class="quiz-entry" id="startQuiz" type="button">
+              <span class="quiz-entry-copy">
+                <small>拿不准？做个 8 题测试</small>
+                <strong>测测你的夜店属性</strong>
+              </span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </section>
+        </aside>
+
+        <div class="content-column">
+          <section class="results-section" aria-labelledby="listTitle">
+            <div class="section-heading results-heading">
+              <div>
+                <p class="kicker">Tonight Picks / 今晚候选</p>
+                <h2 id="listTitle">上海 · 今晚没想法</h2>
+              </div>
+              <span class="count-pill" id="venueCount">0 家</span>
+            </div>
+            <p class="section-note"><span aria-hidden="true"></span>资料按公开信息整理，价格、阵容和营业状态请以当晚为准。</p>
+            <div class="venue-list" id="venueList" aria-live="polite"></div>
+          </section>
+
+          <section class="quiz-section" id="quiz">
+            <div class="section-heading">
+              <div>
+                <p class="kicker">Club Type / 夜店人格</p>
+                <h2>夜店属性测试</h2>
+              </div>
+              <span class="count-pill">8 题</span>
+            </div>
+            <div class="quiz-card">
+              <div class="quiz-progress">
+                <span id="quizStep">01</span>
+                <div class="progress-track"><span id="quizProgress"></span></div>
+              </div>
+              <h3 id="quizQuestion"></h3>
+              <div class="quiz-options" id="quizOptions"></div>
+              <div class="quiz-result hidden" id="quizResult"></div>
+            </div>
+          </section>
+
+          <section class="glossary-section">
+            <div class="section-heading">
+              <div>
+                <p class="kicker">Glossary / 入门词典</p>
+                <h2>黑话先看懂，少踩一个坑</h2>
+              </div>
+            </div>
+            <div class="glossary-list" id="glossaryList"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="sheet-backdrop hidden" id="sheetBackdrop"></div>
+    <aside class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="场所详情" inert>
+      <div class="sheet-handle"></div>
+      <div class="sheet-content" id="sheetContent"></div>
+    </aside>
+
+    <script src="./app.js?v=4"></script>
+  </body>
+</html>
