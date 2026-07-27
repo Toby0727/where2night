@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>party-feed review console</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>party-feed review console</h1>
+    <div class="topbar-controls">
+      <label for="queue-select">Queue file</label>
+      <select id="queue-select"></select>
+      <button id="save-btn" type="button">Save published items</button>
+      <span id="save-status" class="save-status"></span>
+    </div>
+  </header>
+
+  <main id="cards" class="cards">
+    <p class="empty-state">Loading queue…</p>
+  </main>
+
+  <template id="card-template">
+    <article class="card">
+      <div class="card-media">
+        <img class="card-image" alt="flyer image" />
+        <span class="badge badge-party">likely party</span>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <a class="card-handle" target="_blank" rel="noopener"></a>
+          <span class="card-posted"></span>
+        </div>
+        <p class="card-caption"></p>
+        <div class="card-stats">
+          <span class="card-likes"></span>
+          <span class="card-comments"></span>
+          <a class="card-permalink" target="_blank" rel="noopener">Open on Instagram</a>
+        </div>
+
+        <div class="card-fields">
+          <label>
+            Event time
+            <input type="text" class="field-event-time" placeholder="e.g. Fri 10pm" />
+          </label>
+
+          <div class="address-public">
+            <label>
+              Address
+              <input type="text" class="field-address" placeholder="Street address" />
+            </label>
+          </div>
+
+          <div class="address-dm">
+            <p class="dm-note"></p>
+            <label>
+              Area (coarse location only, no full address)
+              <input type="text" class="field-area" placeholder="e.g. Euclid Ave" />
+            </label>
+          </div>
+
+          <label class="publish-toggle">
+            <input type="checkbox" class="field-publish" />
+            Publish
+          </label>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

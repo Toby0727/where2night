@@ -1,0 +1,78 @@
+[
+  {
+    "handle": "funknwaffles",
+    "shortcode": "CzSampleAB1",
+    "permalink": "https://www.instagram.com/p/CzSampleAB1/",
+    "posted_at_utc": "2026-07-19T23:15:00+00:00",
+    "caption": "THIS FRIDAY: local showcase night, doors at 8pm, $10 cover. Funk 'n Waffles Downstage, 313 S Clinton St. DJ sets all night!",
+    "image_url": "https://picsum.photos/seed/funknwaffles-flyer/900/1125",
+    "is_video": false,
+    "likes": 214,
+    "comments": 12,
+    "likely_party": true,
+    "review": {
+      "event_time": null,
+      "address_mode": "public",
+      "address": "313 S Clinton St",
+      "area": null,
+      "publish": false
+    }
+  },
+  {
+    "handle": "syracusehardcore",
+    "shortcode": "CzSampleCD2",
+    "permalink": "https://www.instagram.com/p/CzSampleCD2/",
+    "posted_at_utc": "2026-07-19T18:40:00+00:00",
+    "caption": "Hardcore matinee show this Saturday, all ages, 5 bands. Flyer for details.",
+    "image_url": "https://picsum.photos/seed/syrhardcore-flyer/900/1125",
+    "is_video": false,
+    "likes": 88,
+    "comments": 5,
+    "likely_party": true,
+    "review": {
+      "event_time": null,
+      "address_mode": "public",
+      "address": null,
+      "area": null,
+      "publish": false
+    }
+  },
+  {
+    "handle": "caged.syr",
+    "shortcode": "CzSampleEF3",
+    "permalink": "https://www.instagram.com/p/CzSampleEF3/",
+    "posted_at_utc": "2026-07-19T04:05:00+00:00",
+    "caption": "back again this weekend. DM for address. link in bio for the playlist.",
+    "image_url": "https://picsum.photos/seed/caged-flyer/900/1125",
+    "is_video": false,
+    "likes": 341,
+    "comments": 27,
+    "likely_party": true,
+    "review": {
+      "event_time": null,
+      "address_mode": "dm",
+      "address": null,
+      "area": null,
+      "publish": false
+    }
+  },
+  {
+    "handle": "dazed.syr",
+    "shortcode": "CzSampleGH4",
+    "permalink": "https://www.instagram.com/p/CzSampleGH4/",
+    "posted_at_utc": "2026-07-18T22:00:00+00:00",
+    "caption": "new merch drop, check the link in bio.",
+    "image_url": "https://picsum.photos/seed/dazed-flyer/900/1125",
+    "is_video": false,
+    "likes": 52,
+    "comments": 3,
+    "likely_party": false,
+    "review": {
+      "event_time": null,
+      "address_mode": "dm",
+      "address": null,
+      "area": null,
+      "publish": false
+    }
+  }
+]
