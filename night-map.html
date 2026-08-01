@@ -1202,6 +1202,30 @@
       color: var(--muted);
     }
 
+    /* account */
+    .google-button {
+      width: 100%; min-height: 48px; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
+      border: 1px solid var(--line-2); border-radius: 12px; background: #fff; color: #3c4043;
+      font-weight: 750; font-size: 14px; cursor: pointer;
+    }
+    .google-button:hover { background: #f1f3f4; }
+    .google-button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .account-note { margin-top: 14px; color: var(--faint); font-size: 10.5px; line-height: 1.5; }
+    .account-row { display: flex; align-items: center; gap: 14px; margin-top: 22px; }
+    .account-avatar { width: 56px; height: 56px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; border: 2px solid var(--line-2); }
+    .account-avatar-placeholder {
+      width: 56px; height: 56px; flex: 0 0 auto; display: grid; place-items: center;
+      border-radius: 50%; border: 2px solid var(--line-2); background: var(--elev); color: var(--muted);
+    }
+    .account-avatar-placeholder svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .account-name { margin: 0; font-size: 17px; font-weight: 800; }
+    .account-email { margin: 3px 0 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .signout-button {
+      width: 100%; min-height: 48px; margin-top: 24px; border: 1px solid var(--line-2); border-radius: 12px;
+      background: var(--elev); color: var(--text); font-weight: 750; cursor: pointer;
+    }
+    .signout-button:hover { border-color: var(--line-3); background: var(--elev-2); }
+
     .report-opts {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1312,131 +1336,152 @@
       background: var(--line-3);
     }
 
+    /* elements that live only in the mobile UI */
+    .m-cats, .m-nav { display: none; }
+    .live-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 999px; background: #ff4d4f; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .04em; }
+    .live-pill i { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: livepulse 1.4s ease-in-out infinite; }
+    @keyframes livepulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+
     /* ========================================================
-     MOBILE UI — applied when the device is detected as a phone
-     (html.mobile is set by the head script). Full-screen map,
-     search + filters floating on top, list as a pull-up sheet.
-     ======================================================== */
-    html.mobile #app {
-      display: block;
+       MOBILE WARM UI — pet-app palette + Yelp structure.
+       Full-screen light map, floating search + category tiles,
+       a horizontal venue-card carousel, and a bottom tab pill.
+       Applied when the device is detected as a phone (html.mobile).
+       ======================================================== */
+    html.mobile {
+      --m-ink: #33291f;
+      --m-soft: #7b6c5a;
+      --m-faint: #a99a86;
+      --m-cream: #fbf1de;
+      --m-card: #ffffff;
+      --m-line: rgba(51, 41, 31, .10);
+      --m-amber: #f6b53f;
+      --m-amber-2: #e59a1e;
+      --m-open: #2f9e6b;
     }
 
-    html.mobile .map-panel {
-      position: absolute;
-      inset: 0;
-    }
+    html.mobile body { background: var(--m-cream); color: var(--m-ink); }
+    html.mobile #app { display: block; background: var(--m-cream); }
+    html.mobile .map-panel { position: absolute; inset: 0; background: #e9ece4; }
+    html.mobile #map, html.mobile .maplibregl-map { background: #e9ece4; }
 
-    html.mobile .sidebar {
-      position: static;
-      width: auto;
-      background: transparent;
-      border: 0;
-      overflow: visible;
-    }
+    /* hide the desktop chrome we don't use on phones */
+    html.mobile .head-row, html.mobile .controls, html.mobile .legend,
+    html.mobile .grabber, html.mobile .list-meta { display: none; }
+    html.mobile .maplibregl-ctrl-top-right, html.mobile .maplibregl-ctrl-bottom-right { display: none; }
+    html.mobile .maplibregl-ctrl-icon { filter: none; }
+    html.mobile .maplibregl-ctrl-attrib { background: rgba(255, 255, 255, .82) !important; color: #8a7b68 !important; }
+    html.mobile .maplibregl-ctrl-attrib a { color: #6a5b48 !important; }
 
+    html.mobile .sidebar { position: static; width: auto; background: transparent; border: 0; overflow: visible; }
+
+    /* top: warm search + Yelp-style category tiles floating over the map */
     html.mobile .side-head {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 950;
-      padding: max(12px, env(safe-area-inset-top)) 12px 22px;
-      background: linear-gradient(180deg, rgba(8, 8, 10, .94) 55%, rgba(8, 8, 10, 0));
-      pointer-events: none;
+      position: absolute; top: 0; left: 0; right: 0; z-index: 950;
+      padding: max(10px, env(safe-area-inset-top)) 12px 14px;
+      background: linear-gradient(180deg, var(--m-cream) 60%, rgba(251, 241, 222, 0));
     }
-
-    html.mobile .side-head>* {
-      pointer-events: auto;
-    }
-
     html.mobile .search-bar {
-      margin-top: 12px;
+      margin: 0; min-height: 50px; border-radius: 16px; background: var(--m-card);
+      border: 1px solid var(--m-line); box-shadow: 0 6px 18px rgba(51, 41, 31, .10);
     }
+    html.mobile .search-bar input { color: var(--m-ink); font-size: 15px; }
+    html.mobile .search-bar input::placeholder { color: var(--m-faint); }
+    html.mobile .search-bar .search-ico { order: -1; width: 38px; height: 38px; border-radius: 12px; background: var(--m-amber); }
+    html.mobile .search-bar .search-ico svg { stroke: #3a2c10; }
+    html.mobile .search-bar:focus-within { border-color: var(--m-amber); box-shadow: 0 0 0 3px rgba(246, 181, 63, .35); }
 
-    html.mobile .controls {
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 12px 0 0;
+    html.mobile .m-cats { display: flex; gap: 10px; margin-top: 12px; padding-bottom: 2px; overflow-x: auto; scrollbar-width: none; }
+    html.mobile .m-cats::-webkit-scrollbar { display: none; }
+    html.mobile .m-cat { flex: 0 0 auto; display: grid; justify-items: center; gap: 6px; width: 62px; border: 0; background: transparent; cursor: pointer; color: var(--m-soft); }
+    html.mobile .m-cat-ic {
+      width: 54px; height: 54px; display: grid; place-items: center; border-radius: 17px;
+      background: var(--m-card); border: 1px solid var(--m-line); box-shadow: 0 4px 12px rgba(51, 41, 31, .08);
+      color: var(--m-ink); transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
     }
+    html.mobile .m-cat-ic svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    html.mobile .m-cat span { font-size: 11px; font-weight: 600; white-space: nowrap; }
+    html.mobile .m-cat[aria-pressed="true"] .m-cat-ic { background: var(--m-amber); color: #3a2c10; border-color: var(--m-amber-2); transform: translateY(-1px); }
+    html.mobile .m-cat[aria-pressed="true"] span { color: var(--m-ink); font-weight: 700; }
 
-    html.mobile .control>label {
-      display: none;
-    }
-
-    html.mobile .control-btn {
-      min-height: 38px;
-    }
-
-    html.mobile .filters-btn {
-      margin-left: 0;
-    }
-
-    html.mobile .list-wrap {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 940;
-      height: min(64%, 560px);
-      padding: 0 12px 20px;
-      background: var(--panel);
-      border-top: 1px solid var(--line-2);
-      border-radius: 20px 20px 0 0;
-      box-shadow: 0 -20px 55px rgba(0, 0, 0, .6);
-      transform: translateY(calc(100% - 156px));
-      transition: transform .3s cubic-bezier(.22, 1, .36, 1);
-    }
-
-    html.mobile .list-wrap.up {
-      transform: translateY(0);
-    }
-
-    html.mobile .grabber {
-      display: flex;
-    }
-
+    /* small warm "open tonight" readout, tucked under the header */
     html.mobile .map-readout {
-      top: auto;
-      bottom: 170px;
-      left: 12px;
-      right: auto;
+      top: calc(max(10px, env(safe-area-inset-top)) + 176px); right: 12px; bottom: auto; left: auto;
+      gap: 10px; padding: 7px 9px 7px 12px; border-radius: 999px;
+      background: var(--m-card); border: 1px solid var(--m-line); box-shadow: 0 6px 16px rgba(51, 41, 31, .12); backdrop-filter: none;
     }
+    html.mobile .map-readout .dot { background: var(--m-open); box-shadow: 0 0 0 4px rgba(47, 158, 107, .15); }
+    html.mobile .map-readout b, html.mobile .map-readout small { color: var(--m-ink); }
+    html.mobile .map-readout small { color: var(--m-soft); }
+    html.mobile .map-readout .pillcount { background: var(--m-amber); color: #3a2c10; }
+    html.mobile .map-note { left: 12px; right: 12px; bottom: 214px; max-width: none; background: var(--m-card); color: var(--m-soft); border: 1px solid var(--m-line); }
 
-    html.mobile .legend {
-      display: none;
+    /* pins: rounded-square avatars (pet-app style) on a light map */
+    html.mobile .pin-avatar { border-radius: 16px; border: 3px solid #fff; box-shadow: 0 8px 18px rgba(51, 41, 31, .30), 0 0 0 1px rgba(51, 41, 31, .10); color: #33291f; }
+    html.mobile .pin-badge { background: var(--m-card); border: 1px solid var(--m-line); color: var(--m-ink); box-shadow: 0 5px 12px rgba(51, 41, 31, .18); backdrop-filter: none; }
+    html.mobile .pin-badge.closed { color: var(--m-soft); }
+    html.mobile .pin.selected .pin-avatar { box-shadow: 0 8px 18px rgba(51, 41, 31, .35), 0 0 0 3px var(--m-amber); }
+    html.mobile .pin.featured .pin-avatar { box-shadow: 0 8px 18px rgba(51, 41, 31, .32), 0 0 0 3px #ff4d4f; }
+
+    /* bottom: horizontal venue-card carousel, sitting above the tab bar */
+    html.mobile .list-wrap {
+      position: absolute; left: 0; right: 0; bottom: 84px; z-index: 930; height: auto; transform: none;
+      padding: 6px 12px 8px; background: transparent; border: 0; box-shadow: none; border-radius: 0;
+      display: flex; gap: 10px; overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; scrollbar-width: none;
     }
-
-    html.mobile .map-note {
-      left: 12px;
-      right: 12px;
-      bottom: 168px;
-      max-width: none;
+    html.mobile .list-wrap::-webkit-scrollbar { display: none; }
+    html.mobile #list { display: contents; }
+    html.mobile .row {
+      flex: 0 0 82%; max-width: 300px; margin: 0; scroll-snap-align: start;
+      background: var(--m-card); border: 1px solid var(--m-line); border-radius: 20px;
+      box-shadow: 0 12px 26px rgba(51, 41, 31, .14); padding: 13px; gap: 12px; opacity: 1;
     }
+    html.mobile .row.selected { border-color: var(--m-amber); box-shadow: 0 12px 26px rgba(51, 41, 31, .2), 0 0 0 2px var(--m-amber); }
+    html.mobile .row.featured { border-color: var(--m-amber-2); background: linear-gradient(180deg, #fff, #fff6e4); }
+    html.mobile .row.closed { opacity: .62; }
+    html.mobile .row-avatar { border-radius: 14px; color: #33291f; }
+    html.mobile .row-name h3 { color: var(--m-ink); }
+    html.mobile .row-sub .dist { color: var(--m-soft); }
+    html.mobile .row-sub .sep { color: var(--m-faint); }
+    html.mobile .row-sub .stat.open { color: var(--m-open); }
+    html.mobile .row-face { background: var(--m-cream); border-color: var(--m-line); color: var(--m-ink); }
+    html.mobile .verified { color: var(--m-amber-2); }
 
-    html.mobile .maplibregl-ctrl-bottom-right {
-      bottom: 168px;
+    /* bottom tab bar (amber pill) */
+    html.mobile .m-nav {
+      display: flex; position: absolute; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 960;
+      align-items: center; justify-content: space-between; padding: 8px 12px;
+      background: var(--m-amber); border-radius: 22px; box-shadow: 0 12px 30px rgba(51, 41, 31, .28);
     }
+    html.mobile .m-nav button { width: 48px; height: 46px; display: grid; place-items: center; border: 0; background: transparent; cursor: pointer; border-radius: 14px; color: #7a5a12; }
+    html.mobile .m-nav button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    html.mobile .m-nav button[aria-current="true"] { background: #33291f; color: var(--m-amber); }
 
+    /* detail sheet → warm bottom sheet */
     html.mobile .sheet {
-      top: auto;
-      width: 100%;
-      max-height: 92dvh;
-      border-left: 0;
-      border-top: 1px solid var(--line-2);
-      border-radius: 20px 20px 0 0;
-      transform: translateY(104%);
+      top: auto; width: 100%; max-height: 92dvh; background: var(--m-cream);
+      border-left: 0; border-top: 1px solid var(--m-line); border-radius: 22px 22px 0 0; transform: translateY(104%);
     }
-
-    html.mobile .sheet.open {
-      transform: translateY(0);
-    }
-
-    html.mobile .toast {
-      right: 12px;
-      left: 12px;
-      bottom: 12px;
-      max-width: none;
-    }
+    html.mobile .sheet.open { transform: translateY(0); }
+    html.mobile .sheet-head h2, html.mobile .fact .v, html.mobile .vibe-txt strong,
+    html.mobile .section p, html.mobile .status-block strong { color: var(--m-ink); }
+    html.mobile .sheet-head .eyebrow, html.mobile .fact .k, html.mobile .vibe-txt span,
+    html.mobile .updated-line, html.mobile .section h3 { color: var(--m-soft); }
+    html.mobile .fact, html.mobile .vibe-block, html.mobile .report-panel { background: var(--m-card); border-color: var(--m-line); }
+    html.mobile .vibe-ring::before { background: var(--m-card); }
+    html.mobile .section { border-color: var(--m-line); }
+    html.mobile .tag { border-color: var(--m-line); color: var(--m-soft); }
+    html.mobile .close-btn { background: var(--m-card); border-color: var(--m-line); color: var(--m-ink); }
+    html.mobile .account-note { color: var(--m-faint); }
+    html.mobile .account-name { color: var(--m-ink); }
+    html.mobile .account-email { color: var(--m-soft); }
+    html.mobile .account-avatar, html.mobile .account-avatar-placeholder { border-color: var(--m-line); }
+    html.mobile .account-avatar-placeholder { background: var(--m-card); color: var(--m-soft); }
+    html.mobile .google-button { border-color: var(--m-line); box-shadow: 0 4px 12px rgba(51, 41, 31, .08); }
+    html.mobile .signout-button { background: var(--m-card); border-color: var(--m-line); color: var(--m-ink); }
+    html.mobile .report-opt { background: var(--m-card); border-color: var(--m-line); color: var(--m-soft); }
+    html.mobile .report-opt[aria-pressed="true"] { color: var(--m-amber-2); border-color: var(--m-amber); background: #fff6e4; }
+    html.mobile .toast { right: 12px; left: 12px; bottom: 86px; max-width: none; }
 
     @media (prefers-reduced-motion: reduce) {
 
@@ -1497,6 +1542,9 @@
               <path d="M12 11v5M12 8v.05" />
             </svg>
           </button>
+          <button class="icon-btn" id="accountButton" type="button" aria-haspopup="dialog" aria-label="Sign in">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+          </button>
         </div>
 
         <label class="search-bar">
@@ -1542,6 +1590,7 @@
             <div class="menu right" role="menu" id="filterMenu"></div>
           </div>
         </div>
+        <div class="m-cats" id="mCats" aria-label="Browse by category"></div>
       </div>
 
       <div class="list-wrap" id="listWrap">
@@ -1550,15 +1599,26 @@
         <div id="list"></div>
       </div>
     </aside>
+    <nav class="m-nav" id="mNav" aria-label="Sections">
+      <button type="button" data-nav="map" aria-current="true" aria-label="Map"><svg viewBox="0 0 24 24"><path d="M9 5 3 7v12l6-2 6 2 6-2V5l-6 2-6-2Z"/><path d="M9 5v12M15 7v12"/></svg></button>
+      <button type="button" data-nav="saved" aria-current="false" aria-label="Saved"><svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4Z"/></svg></button>
+      <button type="button" data-nav="home" aria-current="false" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg></button>
+      <button type="button" data-nav="trends" aria-current="false" aria-label="Trends"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-5 4 3 7-8"/></svg></button>
+      <button type="button" data-nav="me" aria-current="false" aria-label="Me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button>
+    </nav>
   </div>
 
   <div class="scrim" id="scrim" hidden></div>
   <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Spot details" inert>
     <div class="sheet-inner" id="sheetInner"></div>
   </aside>
+  <aside class="sheet" id="accountSheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Your account" inert>
+    <div class="sheet-inner" id="accountSheetInner"></div>
+  </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
     /* ---------- data (real Syracuse placeholder set, shared with index.html) ---------- */
     const SPOTS = [
@@ -1591,6 +1651,12 @@
         lat: 43.0369, lng: -76.1360, status: 'open', cover: 'Free', theme: 'Rager', closesAt: '2 AM',
         opensAt: '10:15 PM', crowd: 'Filling up', line: 'No cover before 11. Comstock side entrance, ID checked at the door.',
         tags: ['no cover', 'early', 'Comstock'], updated: '12 min ago'
+      },
+      {
+        id: 'toby', name: 'Freaky Toby Frat', greek: 'ΦΤ', type: 'frat', live: false, color: '#c3b2e6',
+        lat: 43.0384, lng: -76.1322, status: 'open', cover: '$8', theme: 'Freaky Fridays', closesAt: '2 AM',
+        opensAt: '10:45 PM', crowd: 'Packed', line: 'Freaky Toby is going off — costumes encouraged, side-door cover, DJ Toby spinning till close. Loudest house on the block right now.',
+        tags: ['costumes', 'DJ Toby', 'freaky fridays'], updated: '4 min ago'
       },
       {
         id: 'chuck', name: "Chuck's", greek: 'The Varsity strip', type: 'venue', live: false, color: '#fed7aa',
@@ -1638,8 +1704,22 @@
     const ICON = {
       check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>',
       shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>',
-      close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+      close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+      person: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+      google: '<svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.5l-6.5-5.5C29.4 34.9 26.9 36 24 36c-5.3 0-9.9-3.5-11.5-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3-3.1 5.4-5.8 6.9l6.5 5.5C39.7 37.1 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>'
     };
+
+    const SUPABASE_URL = 'https://gmulazlecxtgukidaril.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtdWxhemxlY3h0Z3VraWRhcmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODQxODgsImV4cCI6MjEwMTE2MDE4OH0.Syg4iqwowjlPfOTg71OgJPRGquDy3f-i4YNjBOjoBzg';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    /* Yelp-style category tiles for the mobile UI (wired to the same filter state). */
+    const CATS = [
+      { id: 'open', kind: 'show', label: 'Open now', icon: '<svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>' },
+      { id: 'frat', kind: 'type', label: 'Frats', icon: '<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>' },
+      { id: 'venue', kind: 'type', label: 'Bars', icon: '<svg viewBox="0 0 24 24"><path d="M5 3h14l-7 8Z"/><path d="M12 11v8"/><path d="M8 21h8"/></svg>' },
+      { id: 'live', kind: 'type', label: 'Live', icon: '<svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>' },
+      { id: 'free', kind: 'type', label: 'No cover', icon: '<svg viewBox="0 0 24 24"><path d="M4 8V5h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6Z"/><path d="M12 7v10"/></svg>' }
+    ];
 
     /* ---------- state ---------- */
     let showFilter = 'open';
@@ -1647,8 +1727,10 @@
     let typeFilters = new Set();
     let searchQuery = '';
     let selectedId = null;
+    let featuredId = null;
     let reportStatus = null;
     let lastFocused = null;
+    let currentUser = null;
     let map = null, mapReady = false;
     const pins = {};
 
@@ -1711,10 +1793,11 @@
     /* ---------- rendering ---------- */
     function rowMarkup(spot) {
       const score = vibeScore(spot), ol = openLabel(spot), mono = monogram(spot);
-      return `<div class="row ${spot.status} ${spot.id === selectedId ? 'selected' : ''}" data-id="${spot.id}" role="button" tabindex="0" aria-label="${spot.name}, ${ol.text}">
+      const feat = spot.id === featuredId;
+      return `<div class="row ${spot.status} ${spot.id === selectedId ? 'selected' : ''} ${feat ? 'featured' : ''}" data-id="${spot.id}" role="button" tabindex="0" aria-label="${spot.name}, ${ol.text}">
     <div class="row-avatar" style="background:${spot.color}"><span class="${mono.cls}">${mono.text}</span></div>
     <div class="row-body">
-      <div class="row-name"><h3>${spot.name}</h3><span class="verified" title="Verified reporter">${ICON.shield}</span></div>
+      <div class="row-name">${feat ? '<span class="live-pill"><i></i>LIVE</span>' : ''}<h3>${spot.name}</h3><span class="verified" title="Verified reporter">${ICON.shield}</span></div>
       <div class="row-sub">
         <span class="dist">${distanceMi(spot).toFixed(1)} mi</span>
         <span class="sep">·</span>
@@ -1727,7 +1810,10 @@
   </div>`;
     }
     function renderList() {
-      const rows = visibleSpots();
+      let rows = visibleSpots();
+      if (featuredId && document.documentElement.classList.contains('mobile')) {
+        rows = rows.slice().sort((a, b) => (a.id === featuredId ? -1 : 0) - (b.id === featuredId ? -1 : 0));
+      }
       document.getElementById('visibleCount').textContent = `${rows.length} spot${rows.length === 1 ? '' : 's'}`;
       document.getElementById('sortNote').textContent = SORT_OPTS.find(o => o.id === sortBy).note;
       document.getElementById('list').innerHTML = rows.length
@@ -1739,7 +1825,22 @@
       document.getElementById('openCount').textContent = open;
       document.getElementById('totalCount').textContent = SPOTS.length;
     }
-    function render() { renderList(); renderReadout(); syncPins(); }
+    function freshRank(u) { if (u === 'just now') return 0; const n = parseInt(u, 10) || 0; return /hr/.test(u) ? n * 60 : n; }
+    function computeFeatured() {
+      const open = SPOTS.filter(s => s.status === 'open' && passesFilters(s));
+      if (!open.length) return null;
+      open.sort((a, b) => vibeScore(b) - vibeScore(a) || freshRank(a.updated) - freshRank(b.updated));
+      return open[0].id;
+    }
+    function buildCats() {
+      const el = document.getElementById('mCats');
+      if (!el) return;
+      el.innerHTML = CATS.map(c => {
+        const on = c.kind === 'show' ? showFilter === c.id : typeFilters.has(c.id);
+        return `<button class="m-cat" type="button" data-cat="${c.id}" data-cat-kind="${c.kind}" aria-pressed="${on}"><span class="m-cat-ic">${c.icon}</span><span>${c.label}</span></button>`;
+      }).join('');
+    }
+    function render() { featuredId = computeFeatured(); renderList(); renderReadout(); buildCats(); syncPins(); }
 
     /* ---------- map ---------- */
     function buildPin(spot) {
@@ -1762,7 +1863,7 @@
         const shown = visibleIds.has(spot.id);
         el.hidden = !shown && !(spot.id === selectedId);
         const score = vibeScore(spot);
-        el.className = `pin ${spot.status} ${spot.id === selectedId ? 'selected' : ''} ${shown ? '' : 'dimmed'}`;
+        el.className = `pin ${spot.status} ${spot.id === selectedId ? 'selected' : ''} ${spot.id === featuredId ? 'featured' : ''} ${shown ? '' : 'dimmed'}`;
         el.querySelector('.pin-badge').classList.toggle('closed', spot.status === 'closed');
         el.querySelector('.pin-badge .face').textContent = faceFor(score);
         el.querySelector('.pin-badge .num').textContent = spot.status === 'closed' ? '—' : score;
@@ -1772,10 +1873,13 @@
       const loader = document.getElementById('mapLoading'), note = document.getElementById('mapNote');
       if (!window.maplibregl) { loader.hidden = true; note.hidden = false; return; }
       try {
+        const onPhone = document.documentElement.classList.contains('mobile');
         map = new maplibregl.Map({
           container: 'map',
-          style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-          center: CENTER, zoom: 14.3, attributionControl: true
+          style: onPhone
+            ? 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+            : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+          center: CENTER, zoom: onPhone ? 14.1 : 14.3, attributionControl: true
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
         let errs = 0;
@@ -1786,6 +1890,14 @@
         loader.hidden = true; note.hidden = false;
         console.warn('Map unavailable; list still works.', err);
       }
+    }
+    function fitAll() {
+      if (!map || !window.maplibregl) return;
+      const spots = visibleSpots();
+      if (!spots.length) return;
+      const b = new maplibregl.LngLatBounds();
+      spots.forEach(s => b.extend([s.lng, s.lat]));
+      map.fitBounds(b, { padding: { top: 210, bottom: 220, left: 50, right: 50 }, maxZoom: 15.4, duration: 600 });
     }
 
     /* ---------- selection + sheet ---------- */
@@ -1855,6 +1967,88 @@
       document.body.classList.remove('modal-open');
       if (lastFocused instanceof HTMLElement) lastFocused.focus();
     }
+
+    /* ---------- account ---------- */
+    function renderAccountButton() {
+      document.querySelectorAll('#accountButton, [data-nav="me"]').forEach(btn => {
+        if (currentUser) {
+          const avatar = currentUser.user_metadata?.avatar_url;
+          btn.setAttribute('aria-label', `Your account (${currentUser.user_metadata?.full_name || currentUser.email || 'signed in'})`);
+          btn.innerHTML = avatar ? `<img src="${avatar}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : ICON.person;
+        } else {
+          btn.setAttribute('aria-label', 'Sign in');
+          btn.innerHTML = ICON.person;
+        }
+      });
+    }
+    function accountSheetContent() {
+      if (currentUser) {
+        const meta = currentUser.user_metadata || {};
+        const avatar = meta.avatar_url
+          ? `<img class="account-avatar" src="${meta.avatar_url}" alt="" referrerpolicy="no-referrer">`
+          : `<span class="account-avatar-placeholder">${ICON.person}</span>`;
+        return `
+      <div class="sheet-top">
+        <div class="sheet-head"><p class="eyebrow">Signed in with Google</p><h2>Your account</h2></div>
+        <button class="close-btn" type="button" aria-label="Close account panel">${ICON.close}</button>
+      </div>
+      <div class="account-row">${avatar}<div><p class="account-name">${meta.full_name || meta.name || 'Syracuse student'}</p><p class="account-email">${currentUser.email || ''}</p></div></div>
+      <button class="signout-button" type="button" id="signOutButton">Sign out</button>`;
+      }
+      return `
+      <div class="sheet-top">
+        <div class="sheet-head"><p class="eyebrow">Tonight · Syracuse</p><h2>Sign in</h2></div>
+        <button class="close-btn" type="button" aria-label="Close account panel">${ICON.close}</button>
+      </div>
+      <button class="google-button" type="button" id="googleSignIn">${ICON.google}Continue with Google</button>
+      <p class="account-note">We use your name, email and photo from Google to set up your profile. Nothing is ever posted on your behalf.</p>`;
+    }
+    function openAccountSheet() {
+      lastFocused = document.activeElement;
+      document.getElementById('accountSheetInner').innerHTML = accountSheetContent();
+      document.getElementById('scrim').hidden = false;
+      const sheet = document.getElementById('accountSheet');
+      sheet.removeAttribute('inert'); sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+      document.getElementById('sidebar').setAttribute('inert', '');
+      document.getElementById('map').setAttribute('inert', '');
+      document.body.classList.add('modal-open');
+      sheet.querySelector('.close-btn').focus();
+    }
+    function closeAccountSheet() {
+      document.getElementById('scrim').hidden = true;
+      const sheet = document.getElementById('accountSheet');
+      sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true'); sheet.setAttribute('inert', '');
+      document.getElementById('sidebar').removeAttribute('inert');
+      document.getElementById('map').removeAttribute('inert');
+      document.body.classList.remove('modal-open');
+      if (lastFocused instanceof HTMLElement) lastFocused.focus();
+    }
+    async function signInWithGoogle() {
+      const redirectTo = window.location.origin + window.location.pathname;
+      const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+      if (error) toast('Google sign-in failed — try again.');
+    }
+    async function signOut() {
+      await sb.auth.signOut();
+      closeAccountSheet();
+      toast('Signed out.');
+    }
+    async function initAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      currentUser = session?.user ?? null;
+      renderAccountButton();
+      sb.auth.onAuthStateChange((event, newSession) => {
+        currentUser = newSession?.user ?? null;
+        renderAccountButton();
+        if (document.getElementById('accountSheet').classList.contains('open')) {
+          document.getElementById('accountSheetInner').innerHTML = accountSheetContent();
+        }
+        if (event === 'SIGNED_IN' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+          history.replaceState(null, '', window.location.pathname);
+        }
+      });
+    }
+
     function toast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg; t.classList.add('show');
@@ -1908,12 +2102,53 @@
       if (e.target.closest('[data-filter-clear]')) { typeFilters.clear(); buildMenus(); refreshFilterBadge(); render(); return; }
       if (!e.target.closest('.menu')) closeAllMenus();
 
+      // mobile category tiles (share the desktop filter state)
+      const cat = e.target.closest('[data-cat]');
+      if (cat) {
+        const id = cat.dataset.cat;
+        if (cat.dataset.catKind === 'show') {
+          showFilter = showFilter === id ? 'all' : id;
+          const sv = document.getElementById('showValue');
+          if (sv) sv.textContent = (SHOW_OPTS.find(o => o.id === showFilter) || { label: 'Everything' }).label;
+          buildMenus();
+        } else {
+          typeFilters.has(id) ? typeFilters.delete(id) : typeFilters.add(id);
+          buildMenus(); refreshFilterBadge();
+        }
+        selectedId = null; render();
+        return;
+      }
+
+      // mobile bottom tab bar
+      const nav = e.target.closest('[data-nav]');
+      if (nav) {
+        const id = nav.dataset.nav;
+        if (id === 'map' || id === 'home') {
+          document.querySelectorAll('[data-nav]').forEach(b => b.setAttribute('aria-current', String(b === nav)));
+          fitAll();
+        } else if (id === 'me') {
+          openAccountSheet();
+        } else {
+          toast('That tab isn\'t in this prototype yet.');
+        }
+        return;
+      }
+
+      // account
+      if (e.target.closest('#accountButton')) { openAccountSheet(); return; }
+      if (e.target.closest('#googleSignIn')) { signInWithGoogle(); return; }
+      if (e.target.closest('#signOutButton')) { signOut(); return; }
+
       // rows
       const row = e.target.closest('.row');
       if (row) { select(row.dataset.id, true); openSheet(row.dataset.id); return; }
 
       // sheet controls
-      if (e.target.closest('.close-btn') || e.target.id === 'scrim') { closeSheet(); return; }
+      if (e.target.closest('.close-btn') || e.target.id === 'scrim') {
+        if (document.getElementById('accountSheet').classList.contains('open')) closeAccountSheet();
+        else closeSheet();
+        return;
+      }
       if (e.target.id === 'openReport') {
         const p = document.getElementById('reportPanel'); p.hidden = !p.hidden;
         e.target.textContent = p.hidden ? "Update tonight's status" : 'Cancel update'; return;
@@ -1939,6 +2174,7 @@
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
+        if (document.getElementById('accountSheet').classList.contains('open')) return closeAccountSheet();
         if (document.getElementById('sheet').classList.contains('open')) return closeSheet();
         closeAllMenus();
       }
@@ -1953,6 +2189,7 @@
     buildMenus();
     initMap();
     render();
+    initAuth();
   </script>
 </body>
 
