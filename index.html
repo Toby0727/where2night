@@ -104,6 +104,14 @@
     font-size: 11px; white-space: nowrap;
   }
   .trust-note i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh); box-shadow: 0 0 0 4px rgba(142, 211, 155, .1); }
+  .account-button {
+    flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center;
+    border: 1px solid var(--line-strong); border-radius: 50%; background: #fff;
+    color: var(--muted); cursor: pointer; overflow: hidden;
+  }
+  .account-button:hover { border-color: #171a1e; color: #171a1e; }
+  .account-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .account-button img { width: 100%; height: 100%; object-fit: cover; }
 
   /* filters */
   .filters {
@@ -293,6 +301,30 @@
   .toast { position: fixed; right: 20px; bottom: 20px; z-index: 2500; max-width: 330px; border: 1px solid var(--fresh); border-radius: var(--radius); padding: 12px 14px; background: #edf9f1; color: #18552f; box-shadow: var(--shadow); font-size: 12px; transform: translateY(140%); transition: transform .22s ease; }
   .toast.show { transform: translateY(0); }
 
+  /* account */
+  .google-button {
+    width: 100%; min-height: 48px; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 1px solid var(--line-strong); border-radius: var(--radius); background: #fff; color: #3c4043;
+    font-weight: 750; font-size: 14px; cursor: pointer;
+  }
+  .google-button:hover { background: var(--surface-2); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .google-button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+  .account-note { margin-top: 14px; color: var(--faint); font-size: 10px; line-height: 1.5; }
+  .account-row { display: flex; align-items: center; gap: 14px; margin-top: 22px; }
+  .account-avatar { width: 56px; height: 56px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; border: 2px solid var(--line-strong); }
+  .account-avatar-placeholder {
+    width: 56px; height: 56px; flex: 0 0 auto; display: grid; place-items: center;
+    border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface-2); color: var(--muted);
+  }
+  .account-avatar-placeholder svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .account-name { margin: 0; font-size: 17px; font-weight: 800; }
+  .account-email { margin: 3px 0 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+  .signout-button {
+    width: 100%; min-height: 48px; margin-top: 24px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+    background: #fff; color: var(--text); font-weight: 750; cursor: pointer;
+  }
+  .signout-button:hover { border-color: #171a1e; background: var(--surface-2); }
+
   @media (max-width: 900px) {
     .feed-panel { width: 400px; min-width: 340px; }
     .trust-note { display: none; }
@@ -375,6 +407,7 @@
       <span class="visually-hidden">Search tonight’s spots</span>
       <input id="searchInput" type="search" autocomplete="off" placeholder="Search houses, bars or music" />
     </label>
+    <button class="account-button" id="accountButton" type="button" aria-haspopup="dialog" aria-label="Sign in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg></button>
     <div class="header-status">
       <div class="trust-note"><i></i>Student-reported · verify before you go</div>
       <div class="datechip" id="datechip"><b>Loading tonight…</b>Greek Row + nearby</div>
@@ -426,9 +459,14 @@
   <div class="sheet-handle"></div>
   <div class="sheet-inner" id="sheetInner"></div>
 </aside>
+<aside class="detail-sheet" id="accountSheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Your account" inert>
+  <div class="sheet-handle"></div>
+  <div class="sheet-inner" id="accountSheetInner"></div>
+</aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const SPOTS = [
   { id:'dke', name:'DKE', greek:'ΔΚΕ', type:'frat', live:false,
@@ -475,14 +513,21 @@ const ICON = {
   clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   ticket: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6Z"/><path d="M12 7v10"/></svg>',
   crowd: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M15 15c3 0 5 1.5 5 4"/></svg>',
-  close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+  close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  person: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
+  google: '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.5l-6.5-5.5C29.4 34.9 26.9 36 24 36c-5.3 0-9.9-3.5-11.5-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3-3.1 5.4-5.8 6.9l6.5 5.5C39.7 37.1 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>'
 };
+
+const SUPABASE_URL = 'https://gmulazlecxtgukidaril.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtdWxhemxlY3h0Z3VraWRhcmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODQxODgsImV4cCI6MjEwMTE2MDE4OH0.Syg4iqwowjlPfOTg71OgJPRGquDy3f-i4YNjBOjoBzg';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let activeFilter = 'all';
 let searchQuery = '';
 let selectedId = null;
 let selectedReportStatus = null;
 let lastFocusedElement = null;
+let currentUser = null;
 let map = null;
 let mapReady = false;
 const markers = {};
@@ -757,6 +802,91 @@ function closeSheet() {
   if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
 }
 
+function renderAccountButton() {
+  const button = document.getElementById('accountButton');
+  if (currentUser) {
+    const avatar = currentUser.user_metadata?.avatar_url;
+    button.setAttribute('aria-label', `Your account (${currentUser.user_metadata?.full_name || currentUser.email || 'signed in'})`);
+    button.innerHTML = avatar ? `<img src="${avatar}" alt="" referrerpolicy="no-referrer">` : ICON.person;
+  } else {
+    button.setAttribute('aria-label', 'Sign in');
+    button.innerHTML = ICON.person;
+  }
+}
+
+function accountSheetContent() {
+  if (currentUser) {
+    const meta = currentUser.user_metadata || {};
+    const avatar = meta.avatar_url
+      ? `<img class="account-avatar" src="${meta.avatar_url}" alt="" referrerpolicy="no-referrer">`
+      : `<span class="account-avatar-placeholder">${ICON.person}</span>`;
+    return `
+      <div class="detail-title-row">
+        <div><p class="detail-eyebrow">Signed in with Google</p><h2 class="detail-title">Your account</h2></div>
+        <button class="close-button" type="button" aria-label="Close account panel">${ICON.close}</button>
+      </div>
+      <div class="account-row">${avatar}<div><p class="account-name">${meta.full_name || meta.name || 'Syracuse student'}</p><p class="account-email">${currentUser.email || ''}</p></div></div>
+      <button class="signout-button" type="button" id="signOutButton">Sign out</button>`;
+  }
+  return `
+    <div class="detail-title-row">
+      <div><p class="detail-eyebrow">Tonight · Syracuse</p><h2 class="detail-title">Sign in</h2><p class="detail-sub">Save spots and post live field reports</p></div>
+      <button class="close-button" type="button" aria-label="Close account panel">${ICON.close}</button>
+    </div>
+    <button class="google-button" type="button" id="googleSignIn">${ICON.google}Continue with Google</button>
+    <p class="account-note">We use your name, email and photo from Google to set up your profile. Nothing is ever posted on your behalf.</p>`;
+}
+
+function openAccountSheet() {
+  lastFocusedElement = document.activeElement;
+  document.getElementById('accountSheetInner').innerHTML = accountSheetContent();
+  document.getElementById('scrim').hidden = false;
+  document.getElementById('accountSheet').removeAttribute('inert');
+  document.getElementById('accountSheet').classList.add('open');
+  document.getElementById('accountSheet').setAttribute('aria-hidden', 'false');
+  document.getElementById('app').setAttribute('inert', '');
+  document.body.classList.add('modal-open');
+  document.querySelector('#accountSheet .close-button').focus();
+}
+
+function closeAccountSheet() {
+  document.getElementById('scrim').hidden = true;
+  document.getElementById('accountSheet').classList.remove('open');
+  document.getElementById('accountSheet').setAttribute('aria-hidden', 'true');
+  document.getElementById('accountSheet').setAttribute('inert', '');
+  document.getElementById('app').removeAttribute('inert');
+  document.body.classList.remove('modal-open');
+  if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+}
+
+async function signInWithGoogle() {
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+  if (error) showToast('Google sign-in failed — try again.');
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  closeAccountSheet();
+  showToast('Signed out.');
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  currentUser = session?.user ?? null;
+  renderAccountButton();
+  sb.auth.onAuthStateChange((event, newSession) => {
+    currentUser = newSession?.user ?? null;
+    renderAccountButton();
+    if (document.getElementById('accountSheet').classList.contains('open')) {
+      document.getElementById('accountSheetInner').innerHTML = accountSheetContent();
+    }
+    if (event === 'SIGNED_IN' && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+      history.replaceState(null, '', window.location.pathname);
+    }
+  });
+}
+
 function showToast(message) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
@@ -766,6 +896,9 @@ function showToast(message) {
 }
 
 document.addEventListener('click', event => {
+  if (event.target.closest('#accountButton')) { openAccountSheet(); return; }
+  if (event.target.closest('#googleSignIn')) { signInWithGoogle(); return; }
+  if (event.target.closest('#signOutButton')) { signOut(); return; }
   const filter = event.target.closest('[data-filter]');
   if (filter) {
     activeFilter = filter.dataset.filter;
@@ -776,7 +909,11 @@ document.addEventListener('click', event => {
   }
   const card = event.target.closest('.spot-card');
   if (card) { selectSpot(card.dataset.id, true); openSheet(card.dataset.id); return; }
-  if (event.target.closest('.close-button') || event.target.id === 'scrim') { closeSheet(); return; }
+  if (event.target.closest('.close-button') || event.target.id === 'scrim') {
+    if (document.getElementById('accountSheet').classList.contains('open')) closeAccountSheet();
+    else closeSheet();
+    return;
+  }
   if (event.target.id === 'mobileHandle') {
     const panel = document.getElementById('feedPanel');
     panel.classList.toggle('up');
@@ -810,7 +947,9 @@ document.addEventListener('click', event => {
 });
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && document.getElementById('detailSheet').classList.contains('open')) closeSheet();
+  if (event.key !== 'Escape') return;
+  if (document.getElementById('accountSheet').classList.contains('open')) closeAccountSheet();
+  else if (document.getElementById('detailSheet').classList.contains('open')) closeSheet();
 });
 
 document.getElementById('searchInput').addEventListener('input', event => {
@@ -821,6 +960,7 @@ document.getElementById('searchInput').addEventListener('input', event => {
 
 initMap();
 render();
+initAuth();
 </script>
 </body>
 </html>
