@@ -1,0 +1,15 @@
+khazix-skills-main/
+party-feed/
+scripts/
+vendor/
+backups/
+docs/
+data/
+7-21/
+.preview/
+.preview-cjk/
+.preview-direct/
+.preview-fontfix/
+.preview-fontpath/
+.agents/
+supabase/
