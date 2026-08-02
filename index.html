@@ -996,17 +996,9 @@ function createBuildingLabels() {
     element.className = `building-tag ${spot.status}`;
     element.setAttribute('aria-label', `${spot.name}: ${STATUS[spot.status].label}`);
     element.addEventListener('click', () => { selectSpot(spot.id, true); openSheet(spot.id); });
-    // prefer placing the label at the real building centroid if available
-    const real = realBuildingAt(spot);
-    let lnglat = [spot.lng, spot.lat];
-    if (real && real.ring && real.ring.length) {
-      const ring = real.ring;
-      let sx = 0, sy = 0;
-      ring.forEach(c => { sx += c[0]; sy += c[1]; });
-      lnglat = [sx / ring.length, sy / ring.length];
-    }
+    // keep the label at the venue's true coordinates (do not snap to building centroid)
     const marker = new maplibregl.Marker({ element, anchor:'bottom', offset:[index % 2 ? -10 : 10,-38 - (index % 3) * 7] })
-      .setLngLat(lnglat)
+      .setLngLat([spot.lng, spot.lat])
       .addTo(map);
     markers[spot.id] = marker;
   });
@@ -1394,15 +1386,8 @@ function syncMarkers() {
     element.className = `building-tag ${spot.status} ${spot.id === selectedId ? 'selected' : ''}`;
     element.setAttribute('aria-label', `${spot.name}: ${STATUS[spot.status].label}`);
     element.innerHTML = `<strong>${label}</strong><small>${STATUS[spot.status].short}</small>`;
-    // if we have a real building polygon for this spot, keep the marker at its centroid
-    const real = realBuildingAt(spot);
-    if (real && real.ring && real.ring.length) {
-      const ring = real.ring;
-      let sx = 0, sy = 0;
-      ring.forEach(c => { sx += c[0]; sy += c[1]; });
-      const centroid = [sx / ring.length, sy / ring.length];
-      try { markers[spot.id].setLngLat(centroid); } catch (e) {}
-    }
+    // Ensure marker stays at spot's true coordinates (don't reproject to building centroid)
+    try { markers[spot.id].setLngLat([spot.lng, spot.lat]); } catch (e) {}
   });
   map.getSource('tonight-buildings')?.setData(buildingGeoJSON());
 }
