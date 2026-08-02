@@ -1388,6 +1388,18 @@ function syncMarkers() {
     element.innerHTML = `<strong>${label}</strong><small>${STATUS[spot.status].short}</small>`;
     // Ensure marker stays at spot's true coordinates (don't reproject to building centroid)
     try { markers[spot.id].setLngLat([spot.lng, spot.lat]); } catch (e) {}
+    // Optional diagnostic: when `window.DEBUG_MARKERS === true`, warn if the
+    // marker's stored position disagrees with the spot coordinates.
+    try {
+      if (window.DEBUG_MARKERS) {
+        const mpos = markers[spot.id].getLngLat();
+        const dx = Math.abs(mpos.lng - spot.lng);
+        const dy = Math.abs(mpos.lat - spot.lat);
+        if (dx > 1e-5 || dy > 1e-5) {
+          console.warn('Marker mismatch for', spot.id, 'spot=', [spot.lng,spot.lat], 'marker=', [mpos.lng,mpos.lat], 'dx=',dx,'dy=',dy);
+        }
+      }
+    } catch (e) {}
   });
   map.getSource('tonight-buildings')?.setData(buildingGeoJSON());
 }
