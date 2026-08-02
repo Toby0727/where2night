@@ -668,21 +668,40 @@ function scaleRing(ring, factor) {
   return ring.map(([x, y]) => [cx + (x - cx) * factor, cy + (y - cy) * factor]);
 }
 
-// Find the real OSM building under a venue and return its footprint + height.
-// Returns null if nothing is there (that venue just won't light up).
+// ray-casting point-in-polygon on a lng/lat ring
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if (((yi > pt[1]) !== (yj > pt[1])) && (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+// Find the real OSM building whose FOOTPRINT contains the venue coordinate.
+// Uses querySourceFeatures (all loaded tiles, not just the viewport) so it is
+// correct even for off-screen venues. Returns null if none is loaded there.
 function realBuildingAt(spot) {
   if (!mapReady || !map.getLayer('campus-buildings')) return null;
+  const src = vectorSourceId();
+  if (!src) return null;
   try {
-    const feats = map.queryRenderedFeatures(map.project([spot.lng, spot.lat]), { layers:['campus-buildings'] });
-    const f = feats && feats[0];
-    if (!f) return null;
-    let ring;
-    if (f.geometry.type === 'Polygon') ring = f.geometry.coordinates[0];
-    else if (f.geometry.type === 'MultiPolygon') ring = f.geometry.coordinates[0][0];
-    else return null;
-    const p = f.properties || {};
-    const h = p.render_height ?? p.height ?? (p['building:levels'] ? p['building:levels'] * 3 : 9);
-    return { ring: scaleRing(ring, 1.05), height: (+h || 9) };
+    const pt = [spot.lng, spot.lat];
+    const feats = map.querySourceFeatures(src, { sourceLayer:'building' });
+    for (const f of feats) {
+      let rings;
+      if (f.geometry.type === 'Polygon') rings = [f.geometry.coordinates[0]];
+      else if (f.geometry.type === 'MultiPolygon') rings = f.geometry.coordinates.map(poly => poly[0]);
+      else continue;
+      for (const ring of rings) {
+        if (pointInRing(pt, ring)) {
+          const p = f.properties || {};
+          const h = p.render_height ?? p.height ?? (p['building:levels'] ? p['building:levels'] * 3 : 9);
+          return { ring: scaleRing(ring, 1.05), height: (+h || 9) };
+        }
+      }
+    }
+    return null;
   } catch (e) { return null; }
 }
 
@@ -892,6 +911,32 @@ function setupViewToggle() {
 /* ---------- Step 3: real trees from OpenStreetMap (Overpass) ---------- */
 let treeTimer = null, lastTreeKey = '';
 
+const FALLBACK_TREES = [
+  [-76.1337, 43.0406],
+  [-76.1326, 43.0412],
+  [-76.1318, 43.0400],
+  [-76.1312, 43.0391],
+  [-76.1305, 43.0382],
+  [-76.1298, 43.0398],
+  [-76.1289, 43.0408],
+  [-76.1282, 43.0394],
+  [-76.1360, 43.0379],
+  [-76.1352, 43.0369],
+  [-76.1344, 43.0376],
+  [-76.1334, 43.0384]
+];
+
+function buildFallbackTreeFeatureCollection() {
+  return {
+    type:'FeatureCollection',
+    features: FALLBACK_TREES.map((coords, index) => ({
+      type:'Feature',
+      properties:{ size: 0.8 + ((index % 5) * 0.08) },
+      geometry:{ type:'Point', coordinates:coords }
+    }))
+  };
+}
+
 // a small pseudo-3D tree: shadow + trunk + canopy + highlight
 function treeImageURL() {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="60">' +
@@ -908,18 +953,20 @@ function initTrees() {
   img.onload = () => {
     try {
       if (!map.hasImage('tree')) map.addImage('tree', img, { pixelRatio: 2 });
-      if (!map.getSource('trees')) map.addSource('trees', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+      if (!map.getSource('trees')) map.addSource('trees', { type:'geojson', data:buildFallbackTreeFeatureCollection() });
+      else map.getSource('trees').setData(buildFallbackTreeFeatureCollection());
       if (!map.getLayer('tree-icons')) {
         map.addLayer({
-          id:'tree-icons', type:'symbol', source:'trees', minzoom:15,
+          id:'tree-icons', type:'symbol', source:'trees', minzoom:14,
           layout:{
             'icon-image':'tree', 'icon-anchor':'bottom',
             'icon-allow-overlap':true, 'icon-ignore-placement':true,
             // zoom stays top-level; per-tree random size scales inside each stop
             'icon-size':['interpolate',['linear'],['zoom'],
-              15, ['*', ['get','size'], 0.30],
-              17, ['*', ['get','size'], 0.60],
-              19, ['*', ['get','size'], 1.00]]
+              14, ['*', ['get','size'], 0.26],
+              16, ['*', ['get','size'], 0.50],
+              18, ['*', ['get','size'], 0.90],
+              20, ['*', ['get','size'], 1.10]]
           }
         });
       }
@@ -937,12 +984,14 @@ function scheduleTrees() {
 }
 
 function fetchTrees() {
-  if (!map.getSource('trees') || map.getZoom() < 15) return;
+  if (!map.getSource('trees') || map.getZoom() < 14) return;
   const b = map.getBounds();
   const s = b.getSouth().toFixed(3), w = b.getWest().toFixed(3), n = b.getNorth().toFixed(3), e = b.getEast().toFixed(3);
   const key = [s, w, n, e].join(',');
   if (key === lastTreeKey) return;
   lastTreeKey = key;
+  const fallbackFc = buildFallbackTreeFeatureCollection();
+  map.getSource('trees')?.setData(fallbackFc);
   const cached = localStorage.getItem('trees:' + key);
   if (cached) { try { map.getSource('trees').setData(JSON.parse(cached)); return; } catch (e) {} }
   const q = `[out:json][timeout:20];node[natural=tree](${s},${w},${n},${e});out skel;`;
@@ -954,11 +1003,11 @@ function fetchTrees() {
         properties:{ size: 0.8 + Math.random() * 0.4 },
         geometry:{ type:'Point', coordinates:[el.lon, el.lat] }
       }));
-      const fc = { type:'FeatureCollection', features };
+      const fc = features.length ? { type:'FeatureCollection', features } : fallbackFc;
       try { localStorage.setItem('trees:' + key, JSON.stringify(fc)); } catch (e) {}
       map.getSource('trees')?.setData(fc);
     })
-    .catch(() => {});
+    .catch(() => { map.getSource('trees')?.setData(fallbackFc); });
 }
 
 function initMap() {
