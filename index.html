@@ -116,7 +116,7 @@
   }
   .trust-note i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh); box-shadow: 0 0 0 4px rgba(53, 217, 134, .14); }
   .account-button {
-    flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center;
+    position: relative; flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center;
     border: 1px solid var(--line-strong); border-radius: 50%; background: var(--surface);
     color: var(--muted); cursor: pointer; overflow: hidden;
     transition: border-color .16s ease, color .16s ease, background .16s ease, transform .08s ease;
@@ -124,7 +124,7 @@
   .account-button:hover { border-color: var(--open); color: var(--text); background: var(--surface-2); }
   .account-button:active { transform: scale(.92); }
   .account-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .account-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .account-button img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
   /* filters */
   .filters {
@@ -527,35 +527,35 @@
 <script>
 const SPOTS = [
   { id:'dke', name:'DKE', greek:'ΔΚΕ', type:'frat', live:false,
-    lat:43.0389, lng:-76.1338, status:'open', cover:'$10', theme:'Neon / Highlighter',
+    lat:43.0432197, lng:-76.1315363, status:'open', cover:'$10', theme:'Neon / Highlighter',
     opensAt:'10:30 PM', crowd:'Packed', line:'Highlighter party — wear white. Biggest turnout on the row tonight, cover at the side door.',
     tags:['neon party','cash only','biggest tonight'], updated:'8 min ago' },
   { id:'sae', name:'SAE', greek:'ΣΑΕ', type:'frat', live:false,
-    lat:43.0381, lng:-76.1352, status:'open', cover:'$5', theme:'Jersey Night',
+    lat:43.0422294, lng:-76.1317679, status:'open', cover:'$5', theme:'Jersey Night',
     opensAt:'10:00 PM', crowd:'Filling up', line:'Wear a jersey or pay double at the door. Basement is the main floor, DJ till 2.',
     tags:['jersey','basement DJ','cheap cover'], updated:'21 min ago' },
   { id:'pike', name:'Pike', greek:'ΠΚΑ', type:'frat', live:false,
-    lat:43.0375, lng:-76.1329, status:'soon', cover:'$10', theme:'Blackout',
+    lat:43.0389361, lng:-76.1295213, status:'soon', cover:'$10', theme:'Blackout',
     opensAt:'11:30 PM', crowd:'Not open yet', line:'Doors at 11:30 — line forms early on Walnut. Guest list closes at midnight.',
     tags:['late open','guest list','Walnut Ave'], updated:'35 min ago' },
   { id:'tdx', name:'Theta Delt', greek:'ΘΔΧ', type:'frat', live:false,
-    lat:43.0398, lng:-76.1345, status:'closed', cover:'—', theme:'—',
+    lat:43.0387005, lng:-76.1295131, status:'closed', cover:'—', theme:'—',
     opensAt:'Not tonight', crowd:'Dark', line:'Not hosting tonight. Usually back on Thursdays — check again then.',
     tags:['dark tonight','Thursdays'], updated:'1 hr ago' },
   { id:'psiu', name:'Psi U', greek:'ΨΥ', type:'frat', live:false,
-    lat:43.0369, lng:-76.1360, status:'open', cover:'Free', theme:'Rager',
+    lat:43.0381410, lng:-76.1293588, status:'open', cover:'Free', theme:'Rager',
     opensAt:'10:15 PM', crowd:'Filling up', line:'No cover before 11. Comstock side entrance, ID checked at the door.',
     tags:['no cover','early','Comstock'], updated:'12 min ago' },
   { id:'chuck', name:"Chuck's", greek:'The Varsity strip', type:'venue', live:false,
-    lat:43.0410, lng:-76.1355, status:'open', cover:'Free', theme:'Dive bar',
+    lat:43.0417305, lng:-76.1357418, status:'open', cover:'Free', theme:'Dive bar',
     opensAt:'Open now', crowd:'Busy', line:'Marshall St institution. 18+ till 10, 21+ after. The pregame-into-lategame spot.',
     tags:['Marshall St','18+ early','dive'], updated:'6 min ago' },
   { id:'lucy', name:"Lucy's", greek:'Marshall St', type:'venue', live:true,
-    lat:43.0413, lng:-76.1348, status:'soon', cover:'$5 after 10', theme:'Live band → DJ',
+    lat:43.0416765, lng:-76.1359846, status:'soon', cover:'$5 after 10', theme:'Live band → DJ',
     opensAt:'9:00 PM', crowd:'Not open yet', line:'Local band opens at 9, DJ takes over at 11. Cover kicks in at 10.',
     tags:['live band','Marshall St','21+'], updated:'40 min ago' },
   { id:'wescott', name:'Westcott basement show', greek:'DIY / house show', type:'venue', live:true,
-    lat:43.0466, lng:-76.1208, status:'soon', cover:'$7 donation', theme:'Indie / punk DIY',
+    lat:43.0417832, lng:-76.1198136, status:'soon', cover:'$7 donation', theme:'Indie / punk DIY',
     opensAt:'9:30 PM', crowd:'Not open yet', line:'Three local bands, BYO. Address shared with RSVPs only — tap “I’m going” to unlock.',
     tags:['house show','DIY','RSVP only'], updated:'2 hr ago' }
 ];
@@ -659,36 +659,51 @@ function render() {
   updateSummary();
 }
 
-function rotatedFootprint(spot, index) {
-  const width = spot.type === 'frat' ? 38 : 45;
-  const depth = spot.type === 'frat' ? 27 : 33;
-  const angle = ((index * 17) - 28) * Math.PI / 180;
-  const metersToLat = 1 / 111320;
-  const metersToLng = 1 / (111320 * Math.cos(spot.lat * Math.PI / 180));
-  const corners = [[-width/2,-depth/2],[width/2,-depth/2],[width/2,depth/2],[-width/2,depth/2]];
-  const ring = corners.map(([x,y]) => {
-    const rx = x * Math.cos(angle) - y * Math.sin(angle);
-    const ry = x * Math.sin(angle) + y * Math.cos(angle);
-    return [spot.lng + rx * metersToLng, spot.lat + ry * metersToLat];
-  });
-  ring.push(ring[0]);
-  return ring;
+// Scale a lng/lat ring outward from its centroid, so the coloured copy fully
+// envelops the grey building underneath (no z-fighting) and reads as "lit".
+function scaleRing(ring, factor) {
+  let cx = 0, cy = 0;
+  ring.forEach(([x, y]) => { cx += x; cy += y; });
+  cx /= ring.length; cy /= ring.length;
+  return ring.map(([x, y]) => [cx + (x - cx) * factor, cy + (y - cy) * factor]);
 }
 
+// Find the real OSM building under a venue and return its footprint + height.
+// Returns null if nothing is there (that venue just won't light up).
+function realBuildingAt(spot) {
+  if (!mapReady || !map.getLayer('campus-buildings')) return null;
+  try {
+    const feats = map.queryRenderedFeatures(map.project([spot.lng, spot.lat]), { layers:['campus-buildings'] });
+    const f = feats && feats[0];
+    if (!f) return null;
+    let ring;
+    if (f.geometry.type === 'Polygon') ring = f.geometry.coordinates[0];
+    else if (f.geometry.type === 'MultiPolygon') ring = f.geometry.coordinates[0][0];
+    else return null;
+    const p = f.properties || {};
+    const h = p.render_height ?? p.height ?? (p['building:levels'] ? p['building:levels'] * 3 : 9);
+    return { ring: scaleRing(ring, 1.05), height: (+h || 9) };
+  } catch (e) { return null; }
+}
+
+// Light up the real buildings the venues sit on (no self-built blocks).
 function buildingGeoJSON() {
-  return {
-    type:'FeatureCollection',
-    features:SPOTS.filter(passesFilter).map((spot,index) => ({
+  const features = [];
+  SPOTS.filter(passesFilter).forEach(spot => {
+    const real = realBuildingAt(spot);
+    if (!real) return;
+    features.push({
       type:'Feature',
       properties:{
         id:spot.id,
         color:spot.id === selectedId ? '#ffe27a' : MAP_COLORS[spot.status],
-        height:(spot.type === 'frat' ? 42 : 50) + (spot.id === selectedId ? 10 : 0),
+        height: real.height + 4 + (spot.id === selectedId ? 6 : 0),
         selected:spot.id === selectedId ? 1 : 0
       },
-      geometry:{ type:'Polygon', coordinates:[rotatedFootprint(spot,index)] }
-    }))
-  };
+      geometry:{ type:'Polygon', coordinates:[real.ring] }
+    });
+  });
+  return { type:'FeatureCollection', features };
 }
 
 function createBuildingLabels() {
@@ -733,17 +748,40 @@ function styleIllustratedBase() {
   });
 
   if (src) {
-    const roadFilter = ['match', ['get','class'], ['motorway','trunk','primary','secondary','tertiary','minor','service','street'], true, false];
-    const isMajor = ['match', ['get','class'], ['motorway','trunk','primary','secondary'], true, false];
-    const wFill =['interpolate',['linear'],['zoom'], 13,['case',isMajor,4.5,2], 16,['case',isMajor,14,7], 18,['case',isMajor,23,12]];
-    const wCasing = ['interpolate',['linear'],['zoom'], 13,['case',isMajor,7.5,3.6], 16,['case',isMajor,20,11.5], 18,['case',isMajor,31,18]];
+    const roadFilter = ['match', ['get','class'], ['motorway','trunk','primary','secondary','tertiary','minor','service'], true, false];
+    const majorFilter = ['match', ['get','class'], ['motorway','trunk','primary','secondary'], true, false];
 
+    // per-class base thickness × a zoom scale → main roads thick, side roads taper
+    const classWidth = ['match', ['get','class'],
+      'motorway', 9, 'trunk', 8, 'primary', 7, 'secondary', 5.5, 'tertiary', 4,
+      'minor', 3, 'service', 2.2,
+      2];
+    // zoom must stay at the top level of the interpolate; scale per-class inside each stop
+    const rw = m => ['interpolate', ['exponential', 1.3], ['zoom'],
+      12, ['*', classWidth, 0.35 * m],
+      15, ['*', classWidth, 0.75 * m],
+      17, ['*', classWidth, 1.15 * m],
+      19, ['*', classWidth, 1.9 * m]];
+    const wFill = rw(1);
+    const wCasing = rw(1.5);
+    const wGlow = rw(2.2);
+
+    // fill colour by class — main roads lighter, side roads dimmer (depth)
+    const fillColor = ['match', ['get','class'],
+      ['motorway','trunk','primary'], '#565c67',
+      ['secondary','tertiary'], '#484e58',
+      '#33383f'];
+
+    // soft bright halo under the main roads only (Snap-Map neon glow)
+    map.addLayer({ id:'ill-road-glow', type:'line', source:src, 'source-layer':'transportation',
+      filter:majorFilter, layout:{ 'line-cap':'round','line-join':'round' },
+      paint:{ 'line-color':'#9fb0c4', 'line-width':wGlow, 'line-opacity':0.12, 'line-blur':3 } }, firstSymbol);
     map.addLayer({ id:'ill-road-casing', type:'line', source:src, 'source-layer':'transportation',
       filter:roadFilter, layout:{ 'line-cap':'round','line-join':'round' },
-      paint:{ 'line-color':'#08090c', 'line-width':wCasing } }, firstSymbol);
+      paint:{ 'line-color':'#0a0c10', 'line-width':wCasing } }, firstSymbol);
     map.addLayer({ id:'ill-road-fill', type:'line', source:src, 'source-layer':'transportation',
       filter:roadFilter, layout:{ 'line-cap':'round','line-join':'round' },
-      paint:{ 'line-color':'#474c55', 'line-width':wFill } }, firstSymbol);
+      paint:{ 'line-color':fillColor, 'line-width':wFill } }, firstSymbol);
     map.addLayer({ id:'ill-building-outline', type:'line', source:src, 'source-layer':'building', minzoom:13,
       paint:{ 'line-color':'#525f70', 'line-width':0.6, 'line-opacity':0.8 } }, firstSymbol);
   }
@@ -772,14 +810,32 @@ function addAxoBuildings() {
         try { map.setLayoutProperty(layer.id, 'visibility', 'none'); } catch (e) {}
       }
     });
+    // Height: prefer real render_height / height, else estimate from
+    // building:levels (× ~3m per floor), else a 2-storey default.
+    const bHeight = ['case',
+      ['has','render_height'], ['to-number',['get','render_height']],
+      ['has','height'], ['to-number',['get','height']],
+      ['*', 3, ['case', ['has','building:levels'], ['to-number',['get','building:levels']], 2]]
+    ];
+    const bBase = ['case',
+      ['has','render_min_height'], ['to-number',['get','render_min_height']],
+      ['has','min_height'], ['to-number',['get','min_height']],
+      0
+    ];
     map.addLayer({
-      id:'campus-buildings', type:'fill-extrusion', source:src, 'source-layer':'building', minzoom:13,
+      id:'campus-buildings', type:'fill-extrusion', source:src, 'source-layer':'building', minzoom:14,
       paint:{
-        'fill-extrusion-color':'#1b2029',
-        'fill-extrusion-height':['case',['has','render_height'],['to-number',['get','render_height']],['has','height'],['to-number',['get','height']],8],
-        'fill-extrusion-base':['case',['has','render_min_height'],['to-number',['get','render_min_height']],0],
-        'fill-extrusion-opacity':.72,
-        'fill-extrusion-vertical-gradient':true
+        // taller buildings read lighter — fakes a lit skyline against the dark ground
+        'fill-extrusion-color':['interpolate',['linear'], bHeight,
+          0,   '#1b212b',
+          12,  '#242c37',
+          30,  '#2f3945',
+          70,  '#3c4756',
+          140, '#4a5666'],
+        'fill-extrusion-height': bHeight,
+        'fill-extrusion-base': bBase,
+        'fill-extrusion-opacity': 0.92,
+        'fill-extrusion-vertical-gradient': true
       }
     }, firstLabel);
   }
@@ -812,7 +868,7 @@ function addAxoBuildings() {
 
 /* Make the compass/pitch control toggle between the axonometric view and a
    flat plan view, instead of MapLibre's default one-way "reset to north". */
-const AXO_VIEW = { pitch:56, bearing:-45 };
+const AXO_VIEW = { pitch:50, bearing:-45 };
 function setupViewToggle() {
   const container = map.getContainer();
   const noMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -833,6 +889,78 @@ function setupViewToggle() {
   }, true);
 }
 
+/* ---------- Step 3: real trees from OpenStreetMap (Overpass) ---------- */
+let treeTimer = null, lastTreeKey = '';
+
+// a small pseudo-3D tree: shadow + trunk + canopy + highlight
+function treeImageURL() {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="60">' +
+    '<ellipse cx="24" cy="55" rx="13" ry="4" fill="rgba(0,0,0,0.40)"/>' +
+    '<rect x="22" y="36" width="4" height="15" rx="1.5" fill="#3a2a1c"/>' +
+    '<circle cx="24" cy="25" r="17" fill="#2f6b45"/>' +
+    '<circle cx="18" cy="19" r="7" fill="#4f9163" opacity="0.75"/>' +
+    '</svg>';
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+function initTrees() {
+  const img = new Image(48, 60);
+  img.onload = () => {
+    try {
+      if (!map.hasImage('tree')) map.addImage('tree', img, { pixelRatio: 2 });
+      if (!map.getSource('trees')) map.addSource('trees', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+      if (!map.getLayer('tree-icons')) {
+        map.addLayer({
+          id:'tree-icons', type:'symbol', source:'trees', minzoom:15,
+          layout:{
+            'icon-image':'tree', 'icon-anchor':'bottom',
+            'icon-allow-overlap':true, 'icon-ignore-placement':true,
+            // zoom stays top-level; per-tree random size scales inside each stop
+            'icon-size':['interpolate',['linear'],['zoom'],
+              15, ['*', ['get','size'], 0.30],
+              17, ['*', ['get','size'], 0.60],
+              19, ['*', ['get','size'], 1.00]]
+          }
+        });
+      }
+      scheduleTrees();
+    } catch (e) {}
+  };
+  img.src = treeImageURL();
+}
+
+// throttle: only refetch after the view settles, and only when zoomed in
+function scheduleTrees() {
+  if (!map || map.getZoom() < 15) return;
+  clearTimeout(treeTimer);
+  treeTimer = setTimeout(fetchTrees, 500);
+}
+
+function fetchTrees() {
+  if (!map.getSource('trees') || map.getZoom() < 15) return;
+  const b = map.getBounds();
+  const s = b.getSouth().toFixed(3), w = b.getWest().toFixed(3), n = b.getNorth().toFixed(3), e = b.getEast().toFixed(3);
+  const key = [s, w, n, e].join(',');
+  if (key === lastTreeKey) return;
+  lastTreeKey = key;
+  const cached = localStorage.getItem('trees:' + key);
+  if (cached) { try { map.getSource('trees').setData(JSON.parse(cached)); return; } catch (e) {} }
+  const q = `[out:json][timeout:20];node[natural=tree](${s},${w},${n},${e});out skel;`;
+  fetch('https://overpass-api.de/api/interpreter', { method:'POST', body:'data=' + encodeURIComponent(q) })
+    .then(r => r.json())
+    .then(d => {
+      const features = (d.elements || []).filter(el => el.type === 'node').map(el => ({
+        type:'Feature',
+        properties:{ size: 0.8 + Math.random() * 0.4 },
+        geometry:{ type:'Point', coordinates:[el.lon, el.lat] }
+      }));
+      const fc = { type:'FeatureCollection', features };
+      try { localStorage.setItem('trees:' + key, JSON.stringify(fc)); } catch (e) {}
+      map.getSource('trees')?.setData(fc);
+    })
+    .catch(() => {});
+}
+
 function initMap() {
   const network = document.getElementById('mapNetwork');
   const loader = document.getElementById('mapLoading');
@@ -843,7 +971,7 @@ function initMap() {
       style:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center:[-76.1320,43.0395],
       zoom:15.35,
-      pitch:56,
+      pitch:50,
       bearing:-45,
       maxPitch:70,
       antialias:true,
@@ -859,9 +987,16 @@ function initMap() {
     map.on('load', () => {
       styleIllustratedBase();
       addAxoBuildings();
+      // soft viewport light so extruded facades get shaded sides (depth)
+      try { map.setLight({ anchor:'viewport', color:'#ffffff', intensity:0.4 }); } catch (e) {}
       createBuildingLabels();
+      initTrees();
       mapReady = true;
       syncMarkers();
+      // buildings aren't rendered yet on 'load'; refresh once tiles are in so
+      // the venue buildings light up, and again whenever the view changes.
+      map.once('idle', () => syncMarkers());
+      map.on('moveend', () => { if (mapReady) { syncMarkers(); scheduleTrees(); } });
     });
     map.on('idle', () => { loader.hidden = true; network.hidden = true; });
   } catch (error) {
