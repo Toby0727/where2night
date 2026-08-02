@@ -812,6 +812,44 @@ let map = null;
 let mapReady = false;
 const markers = {};
 
+// detect WebGL availability in the browser
+function webglAvailable() {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+  } catch (e) { return false; }
+}
+
+function loadLeafletFallback() {
+  // add stylesheet
+  if (!document.querySelector('link[data-leaflet-fallback]')) {
+    const lcss = document.createElement('link');
+    lcss.setAttribute('rel','stylesheet');
+    lcss.setAttribute('href','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+    lcss.setAttribute('data-leaflet-fallback','1');
+    document.head.appendChild(lcss);
+  }
+  // load script
+  if (!window.L) {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = () => {
+      try {
+        const loader = document.getElementById('mapLoading');
+        loader.hidden = true;
+        const network = document.getElementById('mapNetwork');
+        network.hidden = true;
+        const leafletMap = L.map('map', { zoomControl: true }).setView([43.0395, -76.1320], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(leafletMap);
+      } catch (e) { console.warn('Leaflet fallback failed', e); }
+    };
+    document.body.appendChild(s);
+  }
+}
+
 const MAP_COLORS = { open:'#ee8fbd', soon:'#5bc1d8', closed:'#647789' };
 
 function passesFilter(spot) {
@@ -957,7 +995,6 @@ function createBuildingLabels() {
     element.type = 'button';
     element.className = `building-tag ${spot.status}`;
     element.setAttribute('aria-label', `${spot.name}: ${STATUS[spot.status].label}`);
-<<<<<<< HEAD
     element.addEventListener('click', () => { selectSpot(spot.id, true); openSheet(spot.id); });
     // prefer placing the label at the real building centroid if available
     const real = realBuildingAt(spot);
@@ -1304,7 +1341,8 @@ function fetchTrees() {
 function initMap() {
   const network = document.getElementById('mapNetwork');
   const loader = document.getElementById('mapLoading');
-  if (!window.maplibregl) { loader.hidden = true; network.hidden = false; return; }
+  // if WebGL isn't available or MapLibre failed to load, fall back to Leaflet raster tiles
+  if (!webglAvailable() || !window.maplibregl) { loader.hidden = true; loadLeafletFallback(); return; }
   try {
     map = new maplibregl.Map({
       container:'map',
