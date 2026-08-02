@@ -751,6 +751,29 @@ function addAxoBuildings() {
   map.on('mouseleave','night-buildings', () => { map.getCanvas().style.cursor = ''; });
 }
 
+/* Make the compass/pitch control toggle between the axonometric view and a
+   flat plan view, instead of MapLibre's default one-way "reset to north". */
+const AXO_VIEW = { pitch:58, bearing:-32 };
+function setupViewToggle() {
+  const container = map.getContainer();
+  const noMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Delegate on the stable map container: MapLibre re-creates the compass
+  // button node (so a direct listener would go stale). Capture phase +
+  // stopImmediatePropagation suppresses the built-in one-way reset-north.
+  container.addEventListener('click', event => {
+    const btn = event.target.closest('.maplibregl-ctrl-compass');
+    if (!btn) return;
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    const isFlat = map.getPitch() < 5;
+    map.easeTo(isFlat
+      ? { pitch:AXO_VIEW.pitch, bearing:AXO_VIEW.bearing, duration:noMotion() ? 0 : 600 }
+      : { pitch:0, bearing:0, duration:noMotion() ? 0 : 600 });
+    btn.setAttribute('title', isFlat ? 'Switch to plan view' : 'Switch to 3D view');
+    btn.setAttribute('aria-label', isFlat ? 'Showing 3D view — switch to plan view' : 'Showing plan view — switch to 3D view');
+  }, true);
+}
+
 function initMap() {
   const network = document.getElementById('mapNetwork');
   const loader = document.getElementById('mapLoading');
@@ -768,6 +791,7 @@ function initMap() {
       attributionControl:true
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch:true }), 'bottom-right');
+    setupViewToggle();
     let mapErrors = 0;
     map.on('error', () => {
       mapErrors += 1;
