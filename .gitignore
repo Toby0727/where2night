@@ -1,5 +1,6 @@
 .env
 .env.local
 .env.*.local
+secret.toml
 node_modules/
 .DS_Store
