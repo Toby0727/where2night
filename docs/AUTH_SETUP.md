@@ -31,6 +31,20 @@ What we still had to build (this repo):
   HTTP 501 if unconfigured, matching SPEC.md's "ship with only Google enabled"
   requirement). See [`supabase/functions/`](../supabase/functions/).
 
+## Current browser integration
+
+The active static page loads `supabase-js` from a CDN and creates its client
+from the `SUPABASE_URL` and public `SUPABASE_ANON_KEY` constants in
+[`index.html`](../index.html). There is no build-time environment injection, so
+pointing the page at another project currently means changing those two
+constants. A Supabase anon key is designed to be public and is constrained by
+RLS; a service-role key must never appear in browser code.
+
+The account sheet currently exposes Google sign-in only. The WeChat and Douyin
+edge functions are optional backend scaffolds and are not wired into the active
+page's UI. `.env.example` documents CLI/edge-function configuration; copying it
+does not configure the static browser client automatically.
+
 ## 1. Create the Supabase project
 
 This repo already has `supabase/config.toml` (`project_id = "where2night"`).
@@ -54,7 +68,9 @@ in your project's Postgres database.
 ## 3. Enable Google login
 
 Dashboard -> **Authentication -> Providers -> Google** -> paste your Google
-OAuth client ID/secret -> Save. No code needed; `supabase-js`'s
+OAuth client ID/secret -> Save. Add the local and deployed page URLs to the
+Supabase Auth redirect allow-list. No custom OAuth handler code is needed;
+`supabase-js`'s
 `signInWithOAuth({ provider: 'google' })` (or a plain redirect to
 `GET {SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=...`) handles
 the rest.
@@ -90,7 +106,8 @@ Per SPEC.md's "reusable across apps" goal:
 2. Copy `supabase/migrations/` and `supabase/functions/` into the new app's repo.
 3. `supabase link --project-ref <new-ref>` then `supabase db push`.
 4. Repeat steps 3–4 above for that project's own OAuth credentials.
-5. Point the client app at the new project's `SUPABASE_URL` / `SUPABASE_ANON_KEY`.
+5. Update the public `SUPABASE_URL` / `SUPABASE_ANON_KEY` constants in
+   `index.html`, and add the app URLs to the Auth redirect allow-list.
 
 Nothing in the schema or functions is hardcoded to this project — only env
 vars/secrets change between apps, same as the original spec intended.

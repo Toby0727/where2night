@@ -1,5 +1,10 @@
 # Reusable User-Account Backend — Build Spec
 
+> **Historical brief.** This records the original FastAPI/Postgres request; it
+> is not the current implementation. The repository implements the account
+> backend with Supabase. Use [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md) as the
+> setup and architecture source of truth.
+
 ## Goal
 Build a **reusable authentication backend** I can drop into multiple apps.
 Each app runs its **own isolated PostgreSQL database** (switch via `DATABASE_URL`).

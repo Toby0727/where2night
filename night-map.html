@@ -174,8 +174,8 @@
     }
 
     .maplibregl-ctrl-group button {
-      width: 42px !important;
-      height: 42px !important;
+      width: 34px !important;
+      height: 34px !important;
       background-color: var(--elev) !important;
     }
 
@@ -270,15 +270,15 @@
     /* floating map overlays */
     .map-readout {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 18px;
+      right: 18px;
       z-index: 40;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       border: 1px solid var(--line-2);
       border-radius: 999px;
-      padding: 9px 9px 9px 16px;
+      padding: 8px 10px 8px 14px;
       background: rgba(17, 17, 20, .86);
       box-shadow: var(--shadow-sm);
       backdrop-filter: blur(14px);
@@ -286,21 +286,21 @@
     }
 
     .map-readout .dot {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 0 4px rgba(87, 226, 160, .14);
+      box-shadow: 0 0 0 3px rgba(87, 226, 160, .14);
     }
 
     .map-readout b {
       font-family: "Bricolage Grotesque", sans-serif;
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .map-readout small {
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .map-readout .pillcount {
@@ -1407,7 +1407,7 @@
     /* small warm "open tonight" readout, tucked under the header */
     html.mobile .map-readout {
       top: calc(max(10px, env(safe-area-inset-top)) + 176px); right: 12px; bottom: auto; left: auto;
-      gap: 10px; padding: 7px 9px 7px 12px; border-radius: 999px;
+      gap: 8px; padding: 6px 8px 6px 10px; border-radius: 999px;
       background: var(--m-card); border: 1px solid var(--m-line); box-shadow: 0 6px 16px rgba(51, 41, 31, .12); backdrop-filter: none;
     }
     html.mobile .map-readout .dot { background: var(--m-open); box-shadow: 0 0 0 4px rgba(47, 158, 107, .15); }

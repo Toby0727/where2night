@@ -21,21 +21,20 @@ python3 -m http.server 4173
 # open http://127.0.0.1:4173/
 ```
 
-The interface is plain client-side HTML/CSS/JS. It loads MapLibre GL JS, CARTO's
-dark vector style, Google Fonts, and the Supabase browser client from CDNs, so
-those features need internet access. The venue list remains usable if map tiles
-are unavailable.
+The interface is plain client-side HTML/CSS/JS. The active page uses the local
+`tokens.css` design tokens and loads MapLibre GL JS, CARTO's dark vector style,
+and the Supabase browser client from CDNs, so the map and account flow need
+internet access. The venue list remains usable if map tiles are unavailable.
 
 ## What's in the prototype
 
 - **Desktop split view** — interactive map on the left, synced “What’s
   happening” feed on the right. Clicking a highlighted building selects the
   matching card and opens its detail sheet.
-- **Yelp-style mobile feed** — the map stays primary while a horizontal card
-  rail is visible automatically at the bottom. Tapping a building promotes its
-  matching card to the first position without opening a modal; tapping the card
-  opens full details. The handle expands a vertical list, and phone landscape
-  moves that list to the right side.
+- **Yelp-style mobile feed** — the map stays primary while a swipeable card rail
+  remains visible at the bottom. Tapping a building promotes its matching card
+  without opening a modal; tapping the card opens full details. Phone landscape
+  moves the feed to a scrollable list on the right.
 - **Axo-style map** — the camera is pitched and rotated into an axonometric-like
   campus view. Nearby OpenStreetMap buildings are extruded over CARTO's dark
   basemap; tonight's spots are highlighted as complete building volumes instead
@@ -43,8 +42,9 @@ are unavailable.
 - **Status as color and text** — open now uses vaporwave pink, opens later uses
   cyan, and dark tonight uses slate; every color state also has a text label.
   On the map, the full footprint and volume of each open house lights up.
-- **Deep-blue Vaporwave UI** — slate-blue surfaces, restrained pink/cyan neon,
-  retro-grid texture, and high-contrast monospaced typography.
+- **Midnight-blue campus UI** — atmospheric slate-blue surfaces, restrained
+  ice/lilac/pink and cyan signals, and a geometric system-font stack defined in
+  `tokens.css`.
 - **Filters** — All / Open now / No cover / Frats / Bars & venues / Live music.
 - **Detail sheet** — doors, cover, how packed it is, the "word tonight," and an
   **"Update tonight's status"** flow with a "last updated X min ago" line.
@@ -91,19 +91,30 @@ reporting from the ground, etc.) is the real design question to solve next.
 
 ## Stack
 
-The UI is plain HTML/CSS/JS in `index.html`, with
-[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) and CARTO's dark
-vector basemap. Supabase provides Google authentication and the optional
-profile/social-account backend described in [`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md).
-There is no frontend build step.
+The UI is plain HTML/CSS/JS in `index.html`, with shared visual tokens in
+`tokens.css`, [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/), and
+CARTO's dark vector basemap. Supabase provides Google authentication and the
+optional profile/social-account backend described in
+[`docs/AUTH_SETUP.md`](docs/AUTH_SETUP.md). There is no frontend build step.
 
-The highlighted venue polygons are intentionally illustrative rectangles built
-around the placeholder coordinates. They demonstrate whole-building selection,
-but are not asserted to be real parcel or building boundaries. Replace them with
-verified OpenStreetMap footprints when the demo gets real Syracuse venue data.
+## Repository map
+
+| Path | Role |
+| --- | --- |
+| `index.html` + `tokens.css` | Active Syracuse prototype and its visual system |
+| `night-map.html` | Standalone alternate map experiment; not the root entry point |
+| `supabase/` | Auth/profile migrations and optional social-login edge functions |
+| `party-feed/` | Local human-review ingestion experiment; not wired into the active page |
+| `docs/mvp-prd.md`, `docs/venue-research-v0.md` | Archived China nightlife research, not current Syracuse product truth |
+| `SPEC.md` | Original auth brief; the implemented Supabase design is documented in `docs/AUTH_SETUP.md` |
+
+The highlighted volumes use OpenStreetMap building footprints detected at the
+placeholder venue coordinates. Neither the venue coordinates nor their building
+matches are verified product data; check both before using real Syracuse venues.
 
 ## Archived concept
 
 The previous Chinese `今晚不开卡` PRD and website are preserved under
-`backups/tonight-no-table-2026-07-22_01-25-30/`. The active root demo is now
-the Syracuse map described above.
+`backups/tonight-no-table-2026-07-22_01-25-30/`; related research snapshots also
+remain in `docs/mvp-prd.md` and `docs/venue-research-v0.md`. The active root demo
+is the Syracuse map described above.
